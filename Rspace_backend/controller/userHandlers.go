@@ -34,9 +34,10 @@ func LoginHandler(c *gin.Context) {
 		middleware.GenerateToken(c, logininfo, user.ID)
 
 	} else { //统一为账户密码错误
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message":  "failed",
-			"is_login": 0,
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "username or password error",
+			"data":    nil,
 		})
 	}
 }

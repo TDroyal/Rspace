@@ -4,6 +4,10 @@
             <div class="col-4">
                 <div class="card">
                     <div class="card-body">
+                        
+                        <img src="../assets/logo.png"  class=" rounded mx-auto d-block" alt="">
+                        
+
                         <form @submit.prevent="login">
                             <div class="mb-3">
                                 <!-- <label for="username" class="form-label">用户名</label> -->
@@ -13,8 +17,9 @@
                             <div class="mb-3">
                                 <!-- <label for="password" class="form-label">密码</label> -->
                                 <input v-model="password" type="password" class="form-control" id="password" placeholder="密码" autocomplete="current-password" required>
+                                <div class="error-message">{{ error_message }}</div>
                             </div>
-                            <!-- <div class="error-message">{{ error_message }}</div> -->
+                            
                             <!-- d-flex 类将创建一个弹性容器，而 justify-content-center 类将使其内容在水平方向上居中对齐。 -->
                             <div class="d-flex justify-content-center">
                                 <button type="submit" class="btn btn-primary position-relative">登录</button>
@@ -80,6 +85,12 @@ export default {
     box-shadow: 3px 3px 3px lightgray,  -3px 0 3px lightgray;
 }
 
+img {
+    width: 20%;
+    margin: auto;
+    margin-bottom: 10px;
+}
+
 button{
     width: 80%;
     margin: auto;
@@ -92,8 +103,10 @@ input {
 
 .error-message {
     color: red;
-    
+    /* margin-top: 0px; */
+    width: 80%;
     margin: auto;
+    margin-top: 5px;
 }
 
 </style>

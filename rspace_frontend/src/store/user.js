@@ -8,8 +8,8 @@ const ModuleUser = {
         username: "",
         photo: "",
         followerCount: 0,
-        jwt: "",     // 客户端存储token,并在请求头中携带Token
-        refresh_jwt: "",
+        jwt: "",     // 客户端存储token,并在请求头中携带Token  jwt一般比较短，就几分钟，或者1小时
+        refresh_jwt: "",   // 刷新令牌  有效期一般比较长，设置7天
         is_login: false,
     },
     mutations: {     //更新state里面的数据
@@ -40,7 +40,7 @@ const ModuleUser = {
     actions: {      //对state的各种操作
         //context里面传一些api，data传信息
         login: (context, data) => {
-            console.log(context)
+            // console.log(context)
             $.ajax({
                 url: "http://127.0.0.1:9090/api/token/",
                 type: "POST",
@@ -48,29 +48,36 @@ const ModuleUser = {
                     username: data.username,
                     password: data.password,
                 },
-                success(resp) {
+                success(resp) {   //应该返回一个jwt和一个刷新令牌
                     console.log(resp);
+                    if(resp.status != 0) {
+                        data.error();
+                        return 
+                    }
+                    // 获取token 和 refresh_token
                     const jwt = resp.data.token
-                    console.log(jwt)
+                    const refresh_jwt = resp.data.refresh_token
+                    
+                    //对jwt进行解密获取里面的用户信息，包括id, username等
                     const jwt_obj = jwtDecode(jwt)  //对token进行解密
-                    console.log(jwt, jwt_obj)
-                    // const { access, refresh } = resp;
-                    // const access_obj = jwt_decode(access);  //对jwt解密获取id
-                    // // console.log(access_obj, refresh);
+                    console.log(jwt, refresh_jwt, jwt_obj)
 
-                    // setInterval(() => {  //每隔4.5分钟去刷新一次jwt
-                    //     $.ajax({
-                    //         url: "http://127.0.0.1:9090/api/token/refresh/",
-                    //         type: "POST",
-                    //         data: {
-                    //             refresh,
-                    //         },
-                    //         success(resp) {
-                    //             // console.log(resp);
-                    //             context.commit("updataAccess", resp.access);
-                    //         }
-                    //     });
-                    // }, 1000 * 60 * 4.5);
+                    setInterval(() => {  //每隔9分钟去刷新一次jwt
+                        $.ajax({
+                            url: "http://127.0.0.1:9090/api/token/refresh/",
+                            type: "POST",
+                            data: {
+                                refresh_jwt:refresh_jwt,
+                            },
+                            success(resp) {  //返回新的jwt
+                                console.log('9分钟刷新的一次token令牌：', resp);
+                                context.commit("updataJwt", resp.jwt);
+                            },
+                            error(resp) {
+                                console.log(resp)
+                            },
+                        });
+                    }, 1000 * 60 * 9);
 
                     // $.ajax({
                     //     url: "http://127.0.0.1:9090/myspace/getinfo/",

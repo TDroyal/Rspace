@@ -19,8 +19,9 @@ type LoginInfo struct {
 
 // 定义荷载payload
 type Myclaims struct {
-	ID       uint   `json:"user_id"`
-	UserName string `json:"username"`
+	ID        uint   `json:"user_id"`
+	UserName  string `json:"username"`
+	TokenType string `json:"token_type"` //jwt, refresh_jwt
 	// StandardClaims结构体实现了Claims接口(Valid()函数)
 	jwtgo.StandardClaims
 }
@@ -30,15 +31,21 @@ type JWT struct {
 	SigningKey []byte
 }
 
+// refresh_jwt
+type Refresh_JWT struct {
+	Refresh_Token string `form:"refresh_jwt" json:"refresh_jwt" xml:"refresh_jwt"  binding:"required"`
+}
+
 // 登陆结果
 type LoginResult struct {
-	Token    string `json:"token"`
-	UserName string `json:"username"`
-	UserID   uint   `json:"user_id"`
+	Token         string `json:"token"`
+	Refresh_Token string `json:"refresh_token"`
+	// UserName      string `json:"username"`
+	// UserID        uint   `json:"user_id"`
 }
 
 var (
-	secret              = "iamsecret"
+	secret              = "iamsecret" //私钥
 	ErrTokenExpired     = errors.New("token is expired")
 	ErrTokenNotValidYet = errors.New("token not active yet")
 	ErrTokenMalformed   = errors.New("that's not even a token")
@@ -61,23 +68,37 @@ func (j *JWT) CreateToken(claims Myclaims) (string, error) {
 }
 
 // 生成token
-func GenerateToken(c *gin.Context, logininfo LoginInfo, user_id uint) {
+func GenerateToken(c *gin.Context, logininfo LoginInfo, user_id uint) { //用户登录成功后，会生成jwt和refresh_jwt两个令牌
 	// 构造SignKey: 签名和解签名需要使用一个值
 	j := NewJWT()
 
-	// 构造用户claims信息(负荷)
+	// 构造用户claims信息(负荷) jwt信息
 	claims := Myclaims{
 		user_id,
 		logininfo.UserName,
+		"jwt",
 		jwtgo.StandardClaims{
 			NotBefore: int64(time.Now().Unix() - 1000), // 签名生效时间
-			ExpiresAt: int64(time.Now().Unix() + 3600), // 签名过期时间
+			ExpiresAt: int64(time.Now().Unix() + 600),  // 签名过期时间  10分钟  60 * 10
 			Issuer:    "royal_111",                     // 签名颁发者
+		},
+	}
+
+	// 构造用户refresh_claims信息，refresh_jwt   有效期时间一般为一周
+	refresh_claims := Myclaims{
+		user_id,
+		logininfo.UserName,
+		"refresh_jwt",
+		jwtgo.StandardClaims{
+			NotBefore: int64(time.Now().Unix() - 1000),   // 签名生效时间
+			ExpiresAt: int64(time.Now().Unix() + 604800), // 签名过期时间  一周
+			Issuer:    "royal_111",                       // 签名颁发者
 		},
 	}
 
 	// 根据claims生成token对象
 	token, err := j.CreateToken(claims)
+	refresh_token, err_ := j.CreateToken(refresh_claims)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  -1,
@@ -86,11 +107,20 @@ func GenerateToken(c *gin.Context, logininfo LoginInfo, user_id uint) {
 		})
 	}
 
+	if err_ != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": err_.Error(),
+			"data":    nil,
+		})
+	}
+
 	log.Println(token)
 	// 返回用户相关数据，
 	data := LoginResult{
-		UserName: logininfo.UserName,
-		Token:    token, // 其中token也返回给用户，用户每次请求需要认证的api时带上token进行身份认证。
+		// UserName:      logininfo.UserName,
+		Token:         token,         // 其中token也返回给用户，用户每次请求需要认证的api时带上token进行身份认证。
+		Refresh_Token: refresh_token, //refresh_jwt
 		// UserID:   user_id,
 	}
 
@@ -142,7 +172,78 @@ func (j *JWT) ParserToken(tokenstr string) (*Myclaims, error) {
 	return nil, errors.New("token NotValid")
 }
 
-// 身份认证
+// 刷新令牌中间件
+func RefreshJWT() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var refresh_jwt Refresh_JWT
+		if err := c.ShouldBind(&refresh_jwt); err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  -1,
+				"message": "未得到refresh_token",
+				"error":   err.Error(),
+			})
+			c.Abort()
+			return
+		}
+
+		// fmt.Println("refresh_jwt = ", refresh_jwt)
+
+		j := NewJWT() //得到私钥
+		refresh_claims, err := j.ParserToken(refresh_jwt.Refresh_Token)
+		if err != nil {
+			// token过期
+			if err == ErrTokenExpired {
+				c.JSON(http.StatusOK, gin.H{
+					"status": -1,
+					"msg":    "token授权已过期, 请重新申请授权",
+					"data":   nil,
+				})
+				c.Abort()
+				return
+			}
+			// 其他错误
+			c.JSON(http.StatusOK, gin.H{
+				"status": -1,
+				"msg":    err.Error(),
+				"data":   nil,
+			})
+			c.Abort()
+			return
+		}
+
+		// fmt.Println("--------", refresh_claims.ID)
+		// 根据解析出来的用户信息构造当前用户的专属令牌
+		// 构造用户claims信息(负荷) jwt信息
+		claims := Myclaims{
+			refresh_claims.ID,
+			refresh_claims.UserName,
+			"jwt",
+			jwtgo.StandardClaims{
+				NotBefore: int64(time.Now().Unix() - 1000), // 签名生效时间
+				ExpiresAt: int64(time.Now().Unix() + 600),  // 签名过期时间  10分钟  60 * 10
+				Issuer:    "royal_111",                     // 签名颁发者
+			},
+		}
+
+		// 根据claims生成token对象
+		token, err := j.CreateToken(claims)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  -1,
+				"message": err.Error(),
+				"data":    nil,
+			})
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  0,
+			"message": "refresh jwt success",
+			"jwt":     token,
+		})
+	}
+}
+
+// 身份认证中间件
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//拿到token
@@ -160,7 +261,7 @@ func JWTAuth() gin.HandlerFunc {
 		fmt.Println("token = ", token)
 
 		//解析出实际的载荷
-		j := NewJWT()
+		j := NewJWT() //得到私钥
 
 		claims, err := j.ParserToken(token)
 		if err != nil {
@@ -185,6 +286,6 @@ func JWTAuth() gin.HandlerFunc {
 		}
 
 		// 解析到具体的claims相关信息  Set is used to store a new key/value pair exclusively for this context.
-		c.Set("claims", claims)
+		c.Set("claims", claims) // 身份认证成功后，下游可以handler函数可以使用该参数
 	}
 }
