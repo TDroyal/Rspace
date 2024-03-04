@@ -8,7 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB *gorm.DB
+)
 
 func InitMySQL() error {
 	var err error

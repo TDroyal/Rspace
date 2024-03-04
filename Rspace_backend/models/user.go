@@ -5,12 +5,7 @@ package models
 // 	"Rspace_backend/dao"
 // )
 
-// 绑定 JSON
-type Login struct {
-	UserName string `form:"username" json:"username" xml:"username"  binding:"required"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required"`
-}
-
+// 构造用户表
 type User struct {
 	// gorm.Model
 	ID       uint   `gorm:"column:id"`
@@ -22,7 +17,7 @@ type User struct {
 
 //创建表  自动迁移（把结构体和数据库表进行对应，就是帮你自动创建，修改数据库表（根据你对结构体的改变））
 
-//用户的增删改查都放在这里
+//用户的增删改查都放在这里（合理吗？？？好像不合理）
 
 // 根据用户账号和密码查询用户是否存在
 // func SearchUserByUserNameAndPassword(login *Login, user *User) (is_exist int) {
