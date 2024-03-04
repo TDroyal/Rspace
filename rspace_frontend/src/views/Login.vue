@@ -1,6 +1,6 @@
 <template>
     <Content>
-        <div class="row justify-content-md-center">
+        <div class="row justify-content-center">
             <div class="col-4">
                 <div class="card">
                     <div class="card-body">
@@ -55,7 +55,7 @@ export default {
                 password:password.value,
                 success() {
                     // 登录成功跳转到首页
-                    console.log("success");
+                    // console.log("success");
                     router.push({name:"Home"});  //跳转路由
                 },
                 error: () => {

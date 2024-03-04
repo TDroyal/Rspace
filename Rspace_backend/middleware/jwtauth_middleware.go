@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	jwtgo "github.com/dgrijalva/jwt-go"
@@ -246,8 +247,10 @@ func RefreshJWT() gin.HandlerFunc {
 // 身份认证中间件
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// fmt.Println("88888888888888888888")
 		//拿到token
-		token := c.Request.Header.Get("token")
+		authHeader := c.Request.Header.Get("Authorization")
+		token := strings.TrimPrefix(authHeader, "Bearer ") //去除前缀
 		if token == "" {
 			c.JSON(http.StatusOK, gin.H{
 				"status": -1,

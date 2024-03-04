@@ -6,6 +6,7 @@ import (
 	"Rspace_backend/models"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,4 +41,33 @@ func LoginHandler(c *gin.Context) {
 			"data":    nil,
 		})
 	}
+}
+
+func GetUserInfoByUserID(c *gin.Context) {
+	// 得到中间件jwt认证的claims
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	user_id := c.Query("user_id")
+	var normal_userinfo models.NormalUser
+
+	if claims != nil {
+		if strconv.Itoa(int(claims.ID)) == user_id {
+			// 去数据库中查找用户的基本信息。
+			// fmt.Println("--------------------", user_id)
+			if err := dao.DB.Where("id = ?", user_id).Find(&normal_userinfo).Error; err != nil {
+				panic(err)
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"status":  0,
+				"message": "get userinfo ok",
+				"data":    normal_userinfo,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "token not match",
+			"data":    nil,
+		})
+	}
+
 }

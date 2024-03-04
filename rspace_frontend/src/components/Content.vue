@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="card">
-            <div class="card-body">
+            <div class="card-body" style="background-color: #F7F8FA;">
                 <slot></slot>
             </div>
         </div>
@@ -20,6 +20,7 @@ export default {
 <style scoped>
 .container {
     margin-top: 10px;
+    background-color: #F7F8FA;
 }
 
 .card {

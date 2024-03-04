@@ -36,7 +36,7 @@ func CloseMySQL() {
 
 // 初始化模型
 func InitModel() {
-	err := DB.AutoMigrate(&models.User{})
+	err := DB.AutoMigrate(&models.User{}, &models.NormalUser{})
 	if err != nil {
 		panic(err)
 	}

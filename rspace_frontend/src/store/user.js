@@ -6,20 +6,28 @@ const ModuleUser = {
     state: {  //存全局数据
         id: "",
         username: "",
-        photo: "",
-        followerCount: 0,
+        avatar: "",
+        // followerCount: 0,
         jwt: "",     // 客户端存储token,并在请求头中携带Token  jwt一般比较短，就几分钟，或者1小时
         refresh_jwt: "",   // 刷新令牌  有效期一般比较长，设置7天
+        address: "",
+        introduction: "",
+        age: "",
+        gender: "",
         is_login: false,
     },
     mutations: {     //更新state里面的数据
         updataUser(state, user) {
             state.id = user.id;
             state.username = user.username;
-            state.photo = user.photo;
-            state.followerCount = user.followerCount;
+            state.avatar = "http://127.0.0.1:9090/static/avatar/" + user.avatar;
+            // state.followerCount = user.followerCount;
             state.jwt = user.jwt;
             state.refresh_jwt = user.refresh_jwt;
+            state.address = user.address
+            state.introduction = user.introduction
+            state.age = user.age
+            state.gender = user.gender
             state.is_login = user.is_login;
         },
 
@@ -30,10 +38,14 @@ const ModuleUser = {
         logout(state) {
             state.id = "";
             state.username = "";
-            state.photo = "";
-            state.followerCount = 0;
+            state.avatar = "";
+            // state.followerCount = 0;
             state.jwt = "";
             state.refresh_jwt = "";
+            state.address = ""
+            state.introduction = ""
+            state.age = ""
+            state.gender = ""
             state.is_login = false;
         },
     },
@@ -60,7 +72,7 @@ const ModuleUser = {
                     
                     //对jwt进行解密获取里面的用户信息，包括id, username等
                     const jwt_obj = jwtDecode(jwt)  //对token进行解密
-                    console.log(jwt, refresh_jwt, jwt_obj)
+                    // console.log(jwt, refresh_jwt, jwt_obj)
 
                     setInterval(() => {  //每隔9分钟去刷新一次jwt
                         $.ajax({
@@ -79,26 +91,42 @@ const ModuleUser = {
                         });
                     }, 1000 * 60 * 9);
 
-                    // $.ajax({
-                    //     url: "http://127.0.0.1:9090/myspace/getinfo/",
-                    //     type: "GET",
-                    //     data: {
-                    //         user_id: access_obj.user_id,
-                    //     },
-                    //     headers: {  //jwt验证
-                    //         'Authorization': "Bearer " + access,
-                    //     },
-                    //     success(resp) {
-                    //         console.log(resp);
-                    //         context.commit("updataUser", {  //传入mutations中的方法名称和参数data
-                    //             ...resp,  //...把数组或对象展开成一系列用逗号隔开的值
-                    //             access: access,
-                    //             refresh: refresh,
-                    //             is_login: true,
-                    //         });
-                    //         data.success();  //调用login.vue里面的回调函数
-                    //     },
-                    // });
+                    $.ajax({
+                        url: "http://127.0.0.1:9090/myspace/getuserinfo/",
+                        type: "GET",
+                        data: {
+                            user_id: jwt_obj.user_id,
+                        },
+                        headers: {  //jwt验证
+                            'Authorization': "Bearer " + jwt,
+                        },
+                        success(resp) {
+                            if (resp.status != 0) {
+                                return 
+                            }
+                            console.log(resp)
+                            let gender = "男"
+                            if (resp.data.gender === 2) {
+                                gender = "女"
+                            }
+                            context.commit("updataUser", {  //传入mutations中的方法名称和参数data
+                                id: resp.data.id,
+                                username: resp.data.name,
+                                avatar: resp.data.avatar,
+                                jwt: jwt,
+                                refresh_jwt: refresh_jwt,
+                                address: resp.data.address,
+                                introduction: resp.data.introduction,
+                                age: resp.data.age,
+                                gender: gender,
+                                is_login: true,
+                            });
+                            data.success();  //调用login.vue里面的回调函数
+                        },
+                        error(resp) {
+                            console.log(resp)
+                        }
+                    });
                 },
                 error(resp) {
                     console.log(resp.responseJSON)  //后端相应的json
