@@ -6,6 +6,7 @@
                 <div class="card-body">
                     <div class="row justify-content-center">
                         <div class="col-4">
+                            <!-- 点击头像进入编辑个人资料页面 -->
                             <img class="img-fluid" :src="userinfo.avatar" alt="">
                         </div>
                         <div class="col-8">
@@ -21,6 +22,13 @@
                         <div class="col-5">
                             <div class="text-center">关注了</div>
                             <div class="text-center">10</div>
+                        </div>
+                    </div>
+                    <!-- 点击头像进入编辑个人信息 -->
+                    <div class="row justify-content-center" style="margin-top: 10px;">
+                        <!-- d-flex  position-relative margin:auto; 就可以居中-->
+                        <div class="col-12  d-flex" >
+                            <button type="button" class="btn  position-relative" @click="editPersionalInfomation">编辑个人信息</button>
                         </div>
                     </div>
                 </div>
@@ -56,6 +64,7 @@
 
 <script>
 import {useStore} from 'vuex'
+import router from '@/router/index';   //@定位src目录
 
 export default {
     name:"UserProfileInfo",
@@ -69,8 +78,14 @@ export default {
     setup() {
         const store = useStore()
 
+        // 进入编辑个人信息页面
+        const editPersionalInfomation = ()=>{
+            router.push({name:"EditUserInfo"})
+        }
+
         return {
             store,
+            editPersionalInfomation,
         }
     }
 }
@@ -79,6 +94,19 @@ export default {
 </script>
 
 <style scoped>
+button{
+    width: 80%;
+    margin: auto;
+    background-color: #EFF9F2;
+    color: #2DB55D;
+    border: none;
+}
+
+button:hover {
+    background-color: #92e4aa;
+    color: white;
+}
+
 img {
     border-radius: 50%;
     /* width: 20px;

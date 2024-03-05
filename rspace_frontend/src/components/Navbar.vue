@@ -91,8 +91,8 @@ a{
 }
 
 .mynav{
-    background-color: lightgray;
-    /* color: red; */
+    background-color: white;
+    
 }
 
 </style>

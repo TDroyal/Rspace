@@ -7,7 +7,7 @@
             </div>
 
             <div class="col-9">
-                body
+                <UserPostLists :posts="posts" :userinfo="user"></UserPostLists>
             </div>
         </div>
     </Content>
@@ -18,20 +18,48 @@ import { reactive } from 'vue'
 import { useStore } from 'vuex'
 import Content from '../components/Content.vue'
 import UserProfileInfo from '../components/UserProfileInfo.vue'
+import UserPostLists from '../components/UserPostLists.vue'
 
 export default {
     name: "Profile",
-    components: {Content,UserProfileInfo,},
+    components: {Content,UserProfileInfo,UserPostLists,},
     setup() {
         const store = useStore()
         const user = reactive({
             ...store.state.user
         })
-        console.log(user)
+
+
+        //作品应该从后端读取
+        const posts = reactive({
+            count:3,
+            posts:[
+                {
+                    id:1,
+                    userId:store.state.user.id,
+                    content:"今天很开心,今天很开心,今天很开心,今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心",
+                    image:"https://img0.baidu.com/it/u=1949733848,3040104377&fm=253&fmt=auto&app=120&f=JPEG?w=1280&h=800",
+                },
+                {
+                    id:2,
+                    userId:store.state.user.id,
+                    content:"我的Share很有趣",
+                    image:"https://img2.baidu.com/it/u=3644231109,3907585499&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
+                },
+                {
+                    id:3,
+                    userId:store.state.user.id,
+                    content:"Go是最好的语言",
+                    image:"https://img1.baidu.com/it/u=2714579055,4205218818&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=313",   
+                }
+            ]
+        });
+        // console.log(user)
 
         return {
-            store,
+            // store,
             user,
+            posts,
         }
     }
 }

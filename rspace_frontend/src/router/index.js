@@ -6,6 +6,7 @@ import Login from '../views/Login.vue'
 import Profile from '../views/Profile.vue'
 import Post from '../views/Post.vue'
 import Star from '../views/Star.vue'
+import EditUserInfo from '../views/EditUserInfo.vue'
 
 const routes = [
   {
@@ -28,14 +29,19 @@ const routes = [
     component: Profile,
   },
   {
-    path: '/Share/',
+    path: '/share/',
     name: 'Share',
     component: Post,
   },
   {
-    path:'/MyStar/',
+    path:'/mystar/',
     name:'Star',
     component:Star,
+  },
+  {
+    path:'/edituserinfo/',
+    name:'EditUserInfo',
+    component:EditUserInfo,
   },
 ]
 

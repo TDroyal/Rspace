@@ -21,6 +21,9 @@ export default {
 .container {
     margin-top: 10px;
     background-color: #F7F8FA;
+    /* height: 92.8vh; */
+    max-height: none;
+    min-height: 92.8vh;
 }
 
 .card {
