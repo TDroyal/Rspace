@@ -17,7 +17,7 @@ const ModuleUser = {
         is_login: false,
     },
     mutations: {     //更新state里面的数据
-        updataUser(state, user) {
+        updateUser(state, user) {
             state.id = user.id;
             state.username = user.username;
             state.avatar = "http://127.0.0.1:9090/static/avatar/" + user.avatar;
@@ -31,8 +31,14 @@ const ModuleUser = {
             state.is_login = user.is_login;
         },
 
-        updataJwt(state, jwt) {
+        updateJwt(state, jwt) {
             state.jwt = jwt;
+        },
+
+        //单独更新头像
+        updateAvatar(state, avatar)
+        {
+            state.avatar = "http://127.0.0.1:9090/static/avatar/" + avatar
         },
 
         logout(state) {
@@ -83,7 +89,7 @@ const ModuleUser = {
                             },
                             success(resp) {  //返回新的jwt
                                 console.log('9分钟刷新的一次token令牌：', resp);
-                                context.commit("updataJwt", resp.jwt);
+                                context.commit("updateJwt", resp.jwt);
                             },
                             error(resp) {
                                 console.log(resp)
@@ -105,11 +111,16 @@ const ModuleUser = {
                                 return 
                             }
                             console.log(resp)
-                            let gender = "男"
-                            if (resp.data.gender === 2) {
-                                gender = "女"
-                            }
-                            context.commit("updataUser", {  //传入mutations中的方法名称和参数data
+
+                            // let gender = ""
+                            // if (resp.data.gender === 1) {
+                            //     gender = "男"
+                            // }
+                            // if (resp.data.gender === 2) {
+                            //     gender = "女"
+                            // }
+
+                            context.commit("updateUser", {  //传入mutations中的方法名称和参数data
                                 id: resp.data.id,
                                 username: resp.data.name,
                                 avatar: resp.data.avatar,
@@ -118,19 +129,20 @@ const ModuleUser = {
                                 address: resp.data.address,
                                 introduction: resp.data.introduction,
                                 age: resp.data.age,
-                                gender: gender,
+                                gender: resp.data.gender,
                                 is_login: true,
                             });
                             data.success();  //调用login.vue里面的回调函数
                         },
                         error(resp) {
                             console.log(resp)
+                            // data.error();
                         }
                     });
                 },
                 error(resp) {
                     console.log(resp.responseJSON)  //后端相应的json
-                    data.error();
+                    // data.error();
                 }
             });
         },

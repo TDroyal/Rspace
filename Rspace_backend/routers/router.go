@@ -30,10 +30,11 @@ func SetupRouter() *gin.Engine {
 		loginGroup.POST("/refresh/", middleware.RefreshJWT()) // 刷新登录令牌
 	}
 
-	// 用户个人信息路由
+	// 用户个人信息路由  更新个人信息
 	userGroup := r.Group("/myspace")
 	{
-		userGroup.GET("/getuserinfo/", middleware.JWTAuth(), controller.GetUserInfoByUserID) //根据user_id返回用户的个人信息
+		userGroup.GET("/getuserinfo/", middleware.JWTAuth(), controller.GetUserInfoByUserIDHandler) //根据user_id返回用户的个人信息
+		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfo)
 	}
 
 	return r

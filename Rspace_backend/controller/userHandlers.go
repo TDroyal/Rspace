@@ -17,6 +17,7 @@ func LoginHandler(c *gin.Context) {
 	// 得到前端传过来的账号和密码
 	if err := c.ShouldBind(&logininfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
 			"message": "error",
 			"error":   err.Error(),
 		})
@@ -43,7 +44,7 @@ func LoginHandler(c *gin.Context) {
 	}
 }
 
-func GetUserInfoByUserID(c *gin.Context) {
+func GetUserInfoByUserIDHandler(c *gin.Context) {
 	// 得到中间件jwt认证的claims
 	claims := c.MustGet("claims").(*middleware.Myclaims)
 	user_id := c.Query("user_id")
@@ -57,7 +58,7 @@ func GetUserInfoByUserID(c *gin.Context) {
 				panic(err)
 			}
 			c.JSON(http.StatusOK, gin.H{
-				"status":  0,
+				"status":  0, //0表示成功
 				"message": "get userinfo ok",
 				"data":    normal_userinfo,
 			})
@@ -70,4 +71,45 @@ func GetUserInfoByUserID(c *gin.Context) {
 		})
 	}
 
+}
+
+// 绑定修改的用户信息
+type UpdatedUserInfo struct {
+	Name         string  `form:"name" json:"name" xml:"name"  binding:"required"` //姓名不能为空
+	Gender       int     `form:"gender" json:"gender" xml:"gender"  binding:"required"`
+	Age          *int    `form:"age" json:"age" xml:"age"  binding:"required"`
+	Address      *string `form:"address" json:"address" xml:"address"  binding:"required"` // 设置为指针类型，即使有binding:"required"，也可以为空
+	Introduction *string `form:"introduction" json:"introduction" xml:"introduction"  binding:"required"`
+}
+
+func UpdateUserInfo(c *gin.Context) {
+	// 得到中间件jwt认证的claims
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	id := claims.ID //得到用户id
+	var updateduserinfo UpdatedUserInfo
+	if err := c.ShouldBind(&updateduserinfo); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"error":   err.Error(),
+		})
+		// return
+	}
+	// fmt.Println(id)
+	// fmt.Println("----------------------", *updateduserinfo.Address, *updateduserinfo.Introduction)
+	//根据id插入数据{royal 2 2 成都 5555555555}
+	if err_ := dao.DB.Model(&models.NormalUser{}).Where("id = ?", id).Updates(models.NormalUser{Name: updateduserinfo.Name, Age: updateduserinfo.Age, Gender: updateduserinfo.Gender, Address: updateduserinfo.Address, Introduction: updateduserinfo.Introduction}).Error; err_ != nil {
+		panic(err_)
+	}
+
+	var normal_userinfo models.NormalUser
+	if err := dao.DB.Where("id = ?", id).Find(&normal_userinfo).Error; err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0, //0表示成功
+		"message": "update userinfo ok",
+		"data":    normal_userinfo, //返回更新后的用户信息，那边马上更新全局的userinfo
+	})
 }

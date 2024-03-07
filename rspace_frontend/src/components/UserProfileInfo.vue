@@ -11,7 +11,7 @@
                         </div>
                         <div class="col-8">
                             <div class="username">{{userinfo.username}}</div>
-                            <div class="gender">{{userinfo.gender}}</div>
+                            <div class="gender">{{gender_map[userinfo.gender]}}</div>
                         </div>
                     </div>
                     <div class="row justify-content-center" style="margin-top: 10px;">
@@ -65,6 +65,7 @@
 <script>
 import {useStore} from 'vuex'
 import router from '@/router/index';   //@定位src目录
+import { reactive } from 'vue';
 
 export default {
     name:"UserProfileInfo",
@@ -77,7 +78,11 @@ export default {
     },
     setup() {
         const store = useStore()
-
+        const gender_map = reactive({
+            0:'',
+            1:'男',
+            2:'女',
+        })
         // 进入编辑个人信息页面
         const editPersionalInfomation = ()=>{
             router.push({name:"EditUserInfo"})
@@ -85,6 +90,7 @@ export default {
 
         return {
             store,
+            gender_map,
             editPersionalInfomation,
         }
     }
