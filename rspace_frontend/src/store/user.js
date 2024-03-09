@@ -1,7 +1,7 @@
 import $ from 'jquery'
 
 import { jwtDecode } from 'jwt-decode'   //看官网才是最正确的选择
-
+import { ElMessage } from 'element-plus'
 const ModuleUser = {
     state: {  //存全局数据
         id: "",
@@ -132,8 +132,13 @@ const ModuleUser = {
                                 gender: resp.data.gender,
                                 is_login: true,
                             });
+                            ElMessage({
+                                message: '登录成功',
+                                type: 'success',
+                            })
                             data.success();  //调用login.vue里面的回调函数
                         },
+                        
                         error(resp) {
                             console.log(resp)
                             // data.error();
@@ -141,6 +146,10 @@ const ModuleUser = {
                     });
                 },
                 error(resp) {
+                    ElMessage({
+                        message: '登录失败，请稍后重试',
+                        type: 'error',
+                    })
                     console.log(resp.responseJSON)  //后端相应的json
                     // data.error();
                 }

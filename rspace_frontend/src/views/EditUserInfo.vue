@@ -82,6 +82,7 @@ import { reactive, ref } from 'vue';
 import Content from '../components/Content.vue'
 import {useStore} from 'vuex'
 import $ from 'jquery'
+import { ElMessage } from 'element-plus'
 
 export default {
     name:"EditUserInfo",
@@ -130,13 +131,17 @@ export default {
 
         const modify_userinfo = ()=>{
             if(userinfo.username === '') {
-                console.log("昵称不能为空")
+                // console.log("昵称不能为空")
+                ElMessage({
+                    message: '昵称不能为空',
+                    type: 'warning',
+                })
                 return 
             }
 
             let address_id_ = $('#address option:selected').val()
             userinfo.address = address_map[address_id_]
-            console.log(userinfo)
+            // console.log(userinfo)
 
             // 通过post方法将修改后的userinfo传回去，不将头像传回去
             $.ajax({
@@ -155,9 +160,13 @@ export default {
                 },
                 success(resp) {
                     // 弹窗更新成功
-                    console.log(resp)
+                    // console.log(resp)
                     if(resp.status != 0) {
-                        console.log("更新失败")
+                        // console.log("更新失败")
+                        ElMessage({
+                            message: '更新失败，请稍后重试',
+                            type: 'error',
+                        })
                         return 
                     }
                     store.commit("updateUser", {  //传入mutations中的方法名称和参数data
@@ -172,10 +181,20 @@ export default {
                         gender: resp.data.gender,
                         is_login: true,
                     });
+                    ElMessage({
+                        message: '更新成功',
+                        type: 'success',
+                    })
                 },
                 error(err) {
                     //更新失败
                     console.log(err)
+                    ElMessage({
+                        message: '更新失败，请稍后重试',
+                        type: 'error',
+                    })
+                    return 
+                    
                 }
             })
 

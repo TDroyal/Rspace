@@ -10,5 +10,6 @@ type NormalUser struct {
 	Avatar       string  `gorm:"column:avatar;type:varchar(300);" form:"avatar" json:"avatar" xml:"avatar"` //默认是一个空头像  （可以在后端放一个空头像，大家进来默认这个url）
 	Address      *string `gorm:"column:address;type:varchar(100);" form:"address" json:"address" xml:"address"`
 	Introduction *string `gorm:"column:introduction;type:varchar(500);" form:"introduction" json:"introduction" xml:"introduction"`
-	// User         User   `gorm:"foreignKey:ID;references:ID"` // GORM同时提供自定义外键名字的方式  参考User表的ID
+	Posts        []Post  `gorm:"foreignKey:UserID;references:ID"` //Post表的UserID为外键，参考NormalUser表的ID
+	// 一对多关联属性，表示一个用户有多个帖子
 }

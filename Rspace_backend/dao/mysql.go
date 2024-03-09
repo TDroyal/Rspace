@@ -4,6 +4,8 @@ package dao
 import (
 	"Rspace_backend/models"
 
+	// "fmt"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -36,7 +38,23 @@ func CloseMySQL() {
 
 // 初始化模型
 func InitModel() {
-	err := DB.AutoMigrate(&models.User{}, &models.NormalUser{})
+	err := DB.AutoMigrate(&models.User{}, &models.NormalUser{}, &models.Post{})
+	// 这里做插入操作,测试
+
+	// post := []models.Post{
+	// 	{Content: "今天很开心,今天很开心,今天很开心,今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心今天很开心", UserID: 1},
+	// 	{Content: "我的Share很有趣！！！", UserID: 1},
+	// 	{Content: "Go是最好的语言", UserID: 1},
+	// }
+	// DB.Create(&post)
+
+	// 做查询操作试一下
+	// var normaluser []models.NormalUser
+	// DB.Model(&models.NormalUser{}).Preload("Posts").Find(&normaluser)  //把
+
+	// 相当于把每个用户的Posts都查找到，并且放在Posts属性里面了
+	// fmt.Printf("--------------%#v-----------\n", *normaluser[0].Posts[1].Image)
+
 	if err != nil {
 		panic(err)
 	}

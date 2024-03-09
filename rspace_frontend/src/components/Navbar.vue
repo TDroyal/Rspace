@@ -43,6 +43,7 @@
 
                     <ul class="dropdown-menu">
                         <li><router-link class="dropdown-item" :to="{name:'Profile', params:{userid:$store.state.user.id}}">个人中心</router-link></li>
+                        <!-- <li><div class="dropdown-item" @click="enterProfile($store.state.user.id)">个人中心</div></li> -->
                         <li><router-link class="dropdown-item" :to="{name:'Star'}">我的收藏</router-link></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><router-link class="dropdown-item" :to="{name:'Login'}" @click="logout">退出</router-link></li>
@@ -59,7 +60,7 @@
 <script>
 
 import { useStore } from 'vuex'
-
+// import router from '@/router/index';   //@定位src目录
 export default{
     name:"Navbar",
     setup(){
@@ -68,8 +69,19 @@ export default{
             store.commit('logout');//调用user.js全局里面mutations里面的函数用commit
         }
 
+        // const enterProfile = (user_id)=> {
+        //     router.push({
+        //         name:"Profile",
+        //         params:{
+        //             userid:user_id,
+        //         }
+        //     })
+        // }
+
+
         return {
             logout, 
+            // enterProfile,
         }
     }
 }
@@ -79,6 +91,8 @@ export default{
 
 
 <style scoped>
+
+
 .avatar{
     width: 30px; 
     height: 30px; 
@@ -92,7 +106,10 @@ a{
 
 .mynav{
     background-color: white;
-    
+    position: fixed;
+    top: 0;
+    width: 100vw;
+    z-index: 1000;
 }
 
 </style>

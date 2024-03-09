@@ -1,6 +1,6 @@
 <template>
     <Content>
-        分享
+        post
     </Content>
 </template>
 

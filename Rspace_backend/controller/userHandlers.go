@@ -6,7 +6,9 @@ import (
 	"Rspace_backend/models"
 	"fmt"
 	"net/http"
-	"strconv"
+	"sort"
+
+	// "strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,26 +53,30 @@ func GetUserInfoByUserIDHandler(c *gin.Context) {
 	var normal_userinfo models.NormalUser
 
 	if claims != nil {
-		if strconv.Itoa(int(claims.ID)) == user_id {
-			// 去数据库中查找用户的基本信息。
-			// fmt.Println("--------------------", user_id)
-			if err := dao.DB.Where("id = ?", user_id).Find(&normal_userinfo).Error; err != nil {
-				panic(err)
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"status":  0, //0表示成功
-				"message": "get userinfo ok",
-				"data":    normal_userinfo,
-			})
-			return
+		// if strconv.Itoa(int(claims.ID)) == user_id {
+		// 去数据库中查找用户的基本信息。
+		// fmt.Println("--------------------", user_id)
+		if err := dao.DB.Where("id = ?", user_id).Find(&normal_userinfo).Error; err != nil {
+			panic(err)
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"status":  -1,
-			"message": "token not match",
-			"data":    nil,
+			"status":  0, //0表示成功
+			"message": "get userinfo ok",
+			"data":    normal_userinfo,
 		})
+		return
+		// }
+		// c.JSON(http.StatusOK, gin.H{
+		// 	"status":  -1,
+		// 	"message": "token not match",
+		// 	"data":    nil,
+		// })
 	}
-
+	c.JSON(http.StatusOK, gin.H{
+		"status":  -1,
+		"message": "token is null",
+		"data":    nil,
+	})
 }
 
 // 绑定修改的用户信息
@@ -82,7 +88,7 @@ type UpdatedUserInfo struct {
 	Introduction *string `form:"introduction" json:"introduction" xml:"introduction"  binding:"required"`
 }
 
-func UpdateUserInfo(c *gin.Context) {
+func UpdateUserInfoHandler(c *gin.Context) {
 	// 得到中间件jwt认证的claims
 	claims := c.MustGet("claims").(*middleware.Myclaims)
 	id := claims.ID //得到用户id
@@ -111,5 +117,49 @@ func UpdateUserInfo(c *gin.Context) {
 		"status":  0, //0表示成功
 		"message": "update userinfo ok",
 		"data":    normal_userinfo, //返回更新后的用户信息，那边马上更新全局的userinfo
+	})
+}
+
+func GetUserPostsHandler(c *gin.Context) {
+	// 得到中间件jwt认证的claims
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	// id := claims.ID //得到用户id
+	if claims == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "token is null",
+			"data":    nil,
+		})
+		return
+	}
+
+	user_id := c.Query("user_id")
+
+	// if strconv.Itoa(int(id)) != user_id {
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"status":  -1,
+	// 		"message": "token not match",
+	// 		"data":    nil,
+	// 	})
+	// 	return
+	// }
+
+	// 查询根据用户id用户的所有帖子
+	var normaluser models.NormalUser
+	if err := dao.DB.Model(&models.NormalUser{}).Where("id = ?", user_id).Preload("Posts").Find(&normaluser).Error; err != nil {
+		panic(err)
+	}
+
+	// 自定义排序函数（降序排序desc）
+	sort.Slice(normaluser.Posts, func(i, j int) bool {
+		return normaluser.Posts[i].CreatedAt.After(normaluser.Posts[j].CreatedAt)
+	})
+
+	// fmt.Printf("----------------%#v", normaluser.Posts)
+	//post以切片形式返回
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "get userposts success",
+		"data":    normaluser.Posts,
 	})
 }

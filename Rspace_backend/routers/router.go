@@ -34,7 +34,14 @@ func SetupRouter() *gin.Engine {
 	userGroup := r.Group("/myspace")
 	{
 		userGroup.GET("/getuserinfo/", middleware.JWTAuth(), controller.GetUserInfoByUserIDHandler) //根据user_id返回用户的个人信息
-		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfo)
+		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfoHandler)
+		userGroup.GET("/getuserposts/", middleware.JWTAuth(), controller.GetUserPostsHandler)
+	}
+
+	// 首页帖子的获取
+	postGroup := r.Group("/homepost")
+	{
+		postGroup.GET("/getposts/", controller.GetHomePost)
 	}
 
 	return r
