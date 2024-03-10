@@ -42,7 +42,15 @@ func SetupRouter() *gin.Engine {
 	postGroup := r.Group("/homepost")
 	{
 		postGroup.GET("/getposts/", controller.GetHomePost)
+
 	}
 
+	// 发帖
+	sharePostGroup := r.Group("/post")
+	sharePostGroup.Use(middleware.JWTAuth())
+	{
+		sharePostGroup.POST("/uploadimage/", controller.UploadPostImageHandler)
+		// sharePostGroup.POST("/uploadcontent/", controller.UploadPostContentHandler)
+	}
 	return r
 }

@@ -7,6 +7,8 @@
                     <!-- 灰色 -->
                 <div class="card-body" >
                     <slot></slot>
+                    <!-- 回到顶部 -->
+                    <el-backtop :right="100" :bottom="100" style="width: 60px; height: 60px;"/>
                 </div>
             </div>
         </div>

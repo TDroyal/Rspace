@@ -191,6 +191,7 @@ func RefreshJWT() gin.HandlerFunc {
 
 		j := NewJWT() //得到私钥
 		refresh_claims, err := j.ParserToken(refresh_jwt.Refresh_Token)
+
 		if err != nil {
 			// token过期
 			if err == ErrTokenExpired {
@@ -250,6 +251,17 @@ func JWTAuth() gin.HandlerFunc {
 		// fmt.Println("88888888888888888888")
 		//拿到token
 		authHeader := c.Request.Header.Get("Authorization")
+		// fmt.Println("************", authHeader)
+		// if authHeader == "Bearer " {
+		// 	c.JSON(http.StatusOK, gin.H{
+		// 		"status": -1,
+		// 		"msg":    "token为空, 请携带token",
+		// 		"data":   nil,
+		// 	})
+		// 	c.Abort()
+		// 	return
+		// }
+
 		token := strings.TrimPrefix(authHeader, "Bearer ") //去除前缀
 		if token == "" {
 			c.JSON(http.StatusOK, gin.H{

@@ -50,7 +50,7 @@ export default {
         //先获取用户个人基本信息
         const getUserInfo = async () => {
             // if (is_me.value === false) {
-                console.log(is_me.value)
+                // console.log(is_me.value)
                 try {
                     const resp = await $.ajax({
                         url: "http://127.0.0.1:9090/myspace/getuserinfo/",

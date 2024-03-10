@@ -56,19 +56,22 @@
                             </el-upload>
                         </template> -->
                         <!-- action必选参数，上传的地址 -->
-                        <!-- :http-request="uploadPosts" -->
                         <div class="row">
                             <div style="font-weight: bold;">图片</div>
                             <div class="col-12">
                                 <el-upload
                                     :limit="6"
                                     class="upload-demo"
-                                    action="#"  
-                                    
+                                    ref="uploadRef"
+                                    action="http://127.0.0.1:9090/post/uploadimage/"  
+                                    :on-preview="handlePreview"
+                                    :on-remove="handleRemove"
+                                    :headers="headers"
+                                    v-model:file-list="fileList"
                                     :before-upload="beforeImageUpload"
                                     :on-success="handleSuccess"
                                     :on-error="handleError"
-                                    v-model:file-list="fileList"
+                                    :data="contentinfo"
                                     :auto-upload="false">
                                     <el-button  size="large" type="primary" style="width: 100%;">选取文件</el-button>
                                 </el-upload>
@@ -97,8 +100,7 @@ import Content from '../components/Content.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
 import { ElMessage} from 'element-plus'
-import router from '@/router/index';   //@定位src目录
-import $ from 'jquery'
+// import $ from 'jquery'
 
 export default {
     name: "Post",
@@ -142,7 +144,6 @@ export default {
             });
         };
 
-        // 手动实现上传图片的函数
         const submitUpload = () => {
             if(content_type.value === '0') {
                 ElMessage({
@@ -158,56 +159,45 @@ export default {
                 })
                 return 
             }
-            // 得到帖子的相关信息：
-            // console.log(contents.value, content_type.value, fileList.value)
-            // const post = {
-            //     images:[],
-            //     content:null,
-            //     type:null,
-            // }
-            const formData = new FormData();
-            fileList.value.forEach((file) => {
-                // post.images.push(file.raw)
-                formData.append('images', file.raw);
-            });
-            formData.append('content', contents.value)
-            formData.append('type', content_type.value)
-            // console.log(formData.getAll('images'), )
-            // post.content = contents.value
-            // post.type = parseInt(content_type.value)
-            // console.log(post)
+            // console.log(content_type.value, contents.value)
+            contentinfo.content = contents.value
+            contentinfo.type = content_type.value
+            console.log(fileList.value)
+            uploadRef.value.submit();
+            
+            // 这个只传content和content_type
 
-            // 要将多张照片数据传递到后端，你可以使用 FormData 对象来构建请求，并将每张照片添加到 FormData 对象中的 images 字段。
-            // 在下述代码中，我们首先创建了一个新的 FormData 对象。然后，使用 forEach 循环遍历 fileList 数组，将每个文件的 raw 数据添加到 FormData 对象的 images 字段中。
-            // 接下来，我们可以通过 formData.append 方法将其他字段（如 content 和 type）添加到 FormData 对象中。
-            // 最后，我们使用 $.ajax 发送请求到后端。请注意，我们设置了 processData 和 contentType 选项为 false，以确保 FormData 对象以正确的方式发送。
+            // $.ajax({
+            //     url:"http://127.0.0.1:9090/post/uploadcontent/",
+            //     type:"POST",
+            //     data: {
+            //         content:contents.value,
+            //         type:content_type.value,
+            //     },
+            //     headers:{
+            //         'Authorization': 'Bearer ' + store.state.user.jwt
+            //     },
+            //     success(resp) {
+            //         // console.log('........................'+resp.status)
+            //         if(resp.status != 0) {
+            //             ElMessage({
+            //                 message: '分享失败！！！',
+            //                 type: 'error',
+            //             })
+            //             return
+            //         }
+            //         return
+            //     },
+            //     error(resp) {
+            //         console.log(resp)
+            //     }
+            // })
 
-            $.ajax({
-                url:"http://127.0.0.1:9090/post/uploadimage/",
-                type:"POST",
-                data:formData,
-                processData: false,
-                contentType: false,
-                headers:{
-                    'Authorization': 'Bearer ' + store.state.user.jwt
-                },
-                success(resp) {
-                    // console.log(resp)
-                    if(resp.status != 0) {
-                        ElMessage.error("分享失败")
-                        return
-                    }
-                    ElMessage.success("分享成功!!!")
-                    //跳到首页去
-                    router.push({
-                        name:"Home",
-                    })
-                },
-                error(resp) {
-                    console.log(resp)
-                }
-            })
-
+            // ElMessage({
+            //     message: '分享成功！！！',
+            //     type: 'success',
+            // })
+            // console.log(content_type.value, contents.value)
         };
 
         const handleRemove = (file, fileList) => {

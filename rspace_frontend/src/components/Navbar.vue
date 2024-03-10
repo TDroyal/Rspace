@@ -17,7 +17,7 @@
                 <li class="nav-item">
                     <router-link class="nav-link" :to="{name:'Home'}">首页</router-link>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" v-if="$store.state.user.is_login">
                     <router-link class="nav-link" :to="{name:'Share'}">分享</router-link>
                 </li>
                 <!-- <li class="nav-item">

@@ -100,7 +100,7 @@ func UpdateUserInfoHandler(c *gin.Context) {
 			"message": "error",
 			"error":   err.Error(),
 		})
-		// return
+		return
 	}
 	// fmt.Println(id)
 	// fmt.Println("----------------------", *updateduserinfo.Address, *updateduserinfo.Introduction)
