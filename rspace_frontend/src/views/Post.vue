@@ -1,4 +1,5 @@
 <template>
+    <!-- 非图片文件也能上传问题的bug还已解决，但是不能从列表中自动删除 -->
     <Content>
         <div class="row justify-content-center">
             <div class="col-9">
@@ -6,7 +7,7 @@
                     <div class="card-body">
                         <div class="row justify-content-center">
                             <div class="col-9">
-                                <div class="post-title">发帖</div>
+                                <div class="post-title" >发帖</div>
                             </div>
                             <div class="col-3">
                                 <!-- <label for="post_type" class="form-label"></label> -->
@@ -56,7 +57,7 @@
                             </el-upload>
                         </template> -->
                         <!-- action必选参数，上传的地址 -->
-                        <!-- :http-request="uploadPosts" -->
+                        <!-- :http-request="uploadPosts"  :on-change="checkImage" :before-upload="beforeImageUpload"-->
                         <div class="row">
                             <div style="font-weight: bold;">图片</div>
                             <div class="col-12">
@@ -64,13 +65,14 @@
                                     :limit="6"
                                     class="upload-demo"
                                     action="#"  
-                                    
-                                    :before-upload="beforeImageUpload"
+                                    list-type="picture"
                                     :on-success="handleSuccess"
                                     :on-error="handleError"
-                                    v-model:file-list="fileList"
+                                    :on-exceed="handleExceed"
+                                    :on-change="checkImage"
+                                    :file-list="fileList"
                                     :auto-upload="false">
-                                    <el-button  size="large" type="primary" style="width: 100%;">选取文件</el-button>
+                                    <el-button  size="large" type="primary" style="width: 100%;">选取图片</el-button>
                                 </el-upload>
                             </div>
                             <div class="col-12">
@@ -78,7 +80,7 @@
                             </div>
                         </div>
                         <!-- <el-button size="large" type="success" @click="submitUpload">上传到服务器</el-button> -->
-                        <div class="row">
+                        <div class="row" style="margin-top: 20px;">
                             <div class="col-12">
                                 <div class="d-flex justify-content-center">
                                     <button type="button" class="btn btn-primary position-relative" @click="submitUpload">点击分享</button>
@@ -166,6 +168,7 @@ export default {
             //     type:null,
             // }
             const formData = new FormData();
+            // console.log(fileList.value)
             fileList.value.forEach((file) => {
                 // post.images.push(file.raw)
                 formData.append('images', file.raw);
@@ -208,6 +211,8 @@ export default {
                 }
             })
 
+            // console.log(fileList.value)
+
         };
 
         const handleRemove = (file, fileList) => {
@@ -219,18 +224,41 @@ export default {
         };
 
         const beforeImageUpload = (rawFile) => {
-            // console.log(rawFile.type, rawFile.size / 1024/1024)
-            if (rawFile.type !== 'image/jpg' && rawFile.type !== 'image/png' && rawFile.type !== 'image/jpeg') {
+            console.log(rawFile.type, rawFile.size / 1024/1024)
+            if (rawFile.raw.type !== 'image/jpg' && rawFile.raw.type !== 'image/png' && rawFile.raw.type !== 'image/jpeg') {
+                ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
+                return false
+            } else if (rawFile.size / 1024 / 1024 > 0.2) {
+                ElMessage.error('每张图片大小不能超过 2MB！')
+                return false
+            }
+            // fileList.value.push(rawFile);  // Store selected files in the fileList array
+            return true
+        }
+
+        const checkImage = (rawFile) =>{
+            // console.log(rawFile)
+            if (rawFile.raw.type !== 'image/jpg' && rawFile.raw.type !== 'image/png' && rawFile.raw.type !== 'image/jpeg') {
+                // 不是这个类型的就应该删掉该文件
+                
                 ElMessage.error('Image must be JPG or PNG or JPEG format!')
                 return false
             } else if (rawFile.size / 1024 / 1024 > 2) {
                 ElMessage.error('Each image size can not exceed 2MB!')
                 return false
             }
+
             fileList.value.push(rawFile);  // Store selected files in the fileList array
             return true
         }
 
+        const handleExceed = ()=>{
+            ElMessage.warning("最多只能上传6张图片哦！")
+        }
+
+        const progress = (uploadFile)=>{
+            console.log('-------------',uploadFile)
+        }
 
         return {
             contents,
@@ -246,6 +274,9 @@ export default {
             beforeImageUpload,
             handleSuccess,
             handleError,
+            handleExceed,
+            checkImage,
+            progress,
         };
     }   
 }
@@ -267,7 +298,6 @@ export default {
 }
 
 .post-title{
-    
     font-weight: bold;
 }
 

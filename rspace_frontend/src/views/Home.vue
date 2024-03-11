@@ -7,7 +7,7 @@
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-12">
-                                    <div class="post-type">日常</div>
+                                    <div class="post-type">{{post_type_map[post.type]}}</div>
                                 </div>
                             </div>
                             <!-- <br/> -->
@@ -95,6 +95,12 @@ export default {
     setup()
     {
         const store = useStore()
+        const post_type_map = reactive({
+            '1':'日常',
+            '2':'新鲜事',
+            '3':'笔记',
+            '4':'其它'
+        })
         // const user = reactive({
         //     ...store.state.user
         // })
@@ -122,12 +128,12 @@ export default {
                 for(let i = 0; i < posts.count; i ++ ) {
                     let post = posts.posts[i]
                     let imgstr = post.image
-                    
+                    // console.log(post)
                     // console.log(imageurl)
                     posts.posts[i].image = ParseImageUrl(imgstr)
                     posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt)
                     posts.posts[i].avatar = "http://127.0.0.1:9090/static/avatar/" + posts.posts[i].avatar
-
+                    posts.posts[i].type = post.type
                 }
                 // console.log(posts)
             },
@@ -193,6 +199,7 @@ export default {
             expandCard,
             collapseCard,
             enterUserProfile,
+            post_type_map,
         }
     }
 }
