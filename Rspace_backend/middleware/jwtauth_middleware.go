@@ -263,6 +263,7 @@ func JWTAuth() gin.HandlerFunc {
 		// }
 
 		token := strings.TrimPrefix(authHeader, "Bearer ") //去除前缀
+		// fmt.Println("*************", token)
 		if token == "" {
 			c.JSON(http.StatusOK, gin.H{
 				"status": -1,

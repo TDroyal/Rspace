@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"os"
 
@@ -143,6 +144,110 @@ func UploadPostImageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "upload post success",
+		"data":    nil,
+	})
+}
+
+type GetComment struct {
+	Comment string `form:"comment" json:"comment" xml:"comment"  binding:"required"`
+	PostID  uint   `form:"post_id" json:"post_id" xml:"post_id" binding:"required"`
+	UserID  uint   `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
+}
+
+func UploadComment(c *gin.Context) {
+	// 先得到用户的id
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	id := claims.ID //得到用户id
+	fmt.Println(id)
+
+	var get_comment GetComment
+
+	if err := c.ShouldBind(&get_comment); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    err.Error(),
+		})
+		return
+	}
+
+	// 再存入数据库
+	comment := models.Comment{Comment: get_comment.Comment, PostID: get_comment.PostID, UserID: get_comment.UserID}
+
+	if err := dao.DB.Create(&comment).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "create to db error",
+			"data":    err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "comment success",
+		"data":    nil,
+	})
+
+	// fmt.Printf("%#v-----------\n", get_comment)
+}
+
+// 数据库查询需要返回的评论数据
+type PostCommentData struct {
+	ID        uint      `form:"id" json:"id" xml:"id"` //评论id
+	CreatedAt time.Time //评论创建时间
+	Comment   string    `form:"comment" json:"comment" xml:"comment"`
+	UserID    uint      `form:"user_id" json:"user_id" xml:"user_id"`
+	Name      string    `form:"name" json:"name" xml:"name"`
+	Avatar    string    `form:"avatar" json:"avatar" xml:"avatar"`
+}
+
+func GetCommentsByPostId(c *gin.Context) {
+	post_id := c.Query("post_id")
+	// fmt.Printf("%#v-------------\n", post_id)
+
+	var post_comment_data []PostCommentData
+
+	dao.DB.Model(&models.Comment{}).
+		Select("comments.id, comments.created_at, comments.comment, comments.user_id,normal_users.name ,normal_users.avatar").
+		Where("comments.post_id = ?", post_id).
+		Joins("left join normal_users on normal_users.id = comments.user_id").
+		Order("comments.created_at desc").
+		Scan(&post_comment_data)
+	// fmt.Printf("%#v===============\n", post_comment_data)
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "get posts success",
+		"data":    post_comment_data,
+	})
+}
+
+type GetCommendID struct {
+	CommendID uint `form:"comment_id" json:"comment_id" xml:"comment_id" binding:"required"`
+}
+
+func DeleteCommentsByCommentId(c *gin.Context) {
+	var id GetCommendID
+	// delete前端传json过来，我才能获取到数据
+	if err := c.BindJSON(&id); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "delete comment unsuccess",
+			"data":    nil,
+		})
+		return
+	}
+	if err := dao.DB.Delete(&models.Comment{}, id.CommendID).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "delete comment unsuccess",
+			"data":    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "delete comment success",
 		"data":    nil,
 	})
 }

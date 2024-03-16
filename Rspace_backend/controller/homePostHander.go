@@ -25,7 +25,7 @@ type PostsWithUserInfo struct {
 
 func GetHomePost(c *gin.Context) {
 	var result []PostsWithUserInfo
-	// 链表查询
+	// 连表查询
 	dao.DB.Model(&models.Post{}).Order("posts.created_at desc").Limit(5).Select("posts.id, posts.created_at, posts.updated_at, posts.deleted_at, posts.content, posts.image, posts.type, posts.user_id, normal_users.name, normal_users.avatar").Joins("JOIN normal_users ON normal_users.id = posts.user_id").Scan(&result)
 	// fmt.Printf("---------%#v------------", result)
 

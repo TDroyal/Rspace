@@ -12,4 +12,6 @@ type NormalUser struct {
 	Introduction *string `gorm:"column:introduction;type:varchar(500);" form:"introduction" json:"introduction" xml:"introduction"`
 	Posts        []Post  `gorm:"foreignKey:UserID;references:ID"` //Post表的UserID为外键，参考NormalUser表的ID
 	// 一对多关联属性，表示一个用户有多个帖子
+	// 一个用户也有多个评论
+	Comments []Comment `gorm:"foreignKey:UserID;references:ID"`
 }
