@@ -206,6 +206,10 @@ export default {
                     }
                 }
                 // console.log(posts)
+                // 再获取当前每个post的评论数
+                for(let index = 0; index < posts.count; index ++ ) {
+                    get_comments_by_post_id(index, posts.posts[index].ID)
+                }
             },
             error(resp) {
                 ElMessage({
@@ -272,7 +276,7 @@ export default {
                     } 
                     //把comment_list放到对应的index下
                     posts.posts[index].comments = comment_list
-                    console.log(posts)
+                    // console.log(posts)
                     // console.log(index, posts.posts[index].comments)
                 },
                 error(resp) {
