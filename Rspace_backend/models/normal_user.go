@@ -14,4 +14,6 @@ type NormalUser struct {
 	// 一对多关联属性，表示一个用户有多个帖子
 	// 一个用户也有多个评论
 	Comments []Comment `gorm:"foreignKey:UserID;references:ID"`
+	// 一个用户有多个收藏
+	Collections []Collection `gorm:"foreignkey:UserID;references:ID"`
 }

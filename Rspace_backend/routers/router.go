@@ -45,6 +45,7 @@ func SetupRouter() *gin.Engine {
 		// 根据帖子id获取评论(待完成)
 		postGroup.GET("/getcommentsbypostid/", controller.GetCommentsByPostId)
 		postGroup.DELETE("/deletecommentsbycommentid/", middleware.JWTAuth(), controller.DeleteCommentsByCommentId)
+		postGroup.GET("/getiscollectcountbypostid/", controller.GetIscollectCountByPostId)
 	}
 
 	// 发帖
@@ -56,6 +57,8 @@ func SetupRouter() *gin.Engine {
 
 		// 根据帖子id和用户id发布评论(待完成)
 		sharePostGroup.POST("/uploadcomment/", controller.UploadComment)
+
+		sharePostGroup.POST("/changecollectStatus/", controller.ChangeCollectStatus)
 	}
 	return r
 }

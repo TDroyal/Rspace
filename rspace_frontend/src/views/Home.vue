@@ -63,11 +63,14 @@
                             <!-- 左边是点赞/收藏  右边是评论 -->
                             <div class="row">
                                 <div class="col-6 text-center">
-                                    <div class="collect">
+                                    <div class="collect" v-if="iscollect[index] === false" @click="changeCollectStatusForAPost(index, post.ID)">
                                         <!-- 旁边还要显示被点赞/收藏的数量，还要判断是否被我收藏 -->
                                         <svg t="1710466679468" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5759" width="200" height="200"><path d="M512 901.746939c-13.583673 0-26.122449-4.179592-37.093878-13.061225-8.881633-7.314286-225.697959-175.020408-312.424489-311.379592C133.746939 532.37551 94.040816 471.24898 94.040816 384.522449c0-144.718367 108.146939-262.269388 240.326531-262.269388 67.395918 0 131.657143 30.82449 177.632653 84.636735 45.453061-54.334694 109.191837-84.636735 177.110204-84.636735 132.702041 0 240.326531 117.55102 240.326531 262.269388 0 85.159184-37.093878 143.673469-67.395919 191.216327l-1.044898 1.567346c-86.726531 136.359184-303.542857 304.587755-312.424489 311.379592-10.44898 8.359184-22.987755 13.061224-36.571429 13.061225z" fill="#8a8a8a" p-id="5760" data-spm-anchor-id="a313x.search_index.0.i15.73333a81m6RRCQ" class="selected"></path></svg>
-                                        5
+                                        <span v-if="post.iscollect_count > 0">{{post.iscollect_count}}</span>
+                                    </div>
+                                    <div class="collect" v-else @click="changeCollectStatusForAPost(index, post.ID)">
                                         <svg t="1710466089661" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3591" width="200" height="200"><path d="M512 901.746939c-13.583673 0-26.122449-4.179592-37.093878-13.061225-8.881633-7.314286-225.697959-175.020408-312.424489-311.379592C133.746939 532.37551 94.040816 471.24898 94.040816 384.522449c0-144.718367 108.146939-262.269388 240.326531-262.269388 67.395918 0 131.657143 30.82449 177.632653 84.636735 45.453061-54.334694 109.191837-84.636735 177.110204-84.636735 132.702041 0 240.326531 117.55102 240.326531 262.269388 0 85.159184-37.093878 143.673469-67.395919 191.216327l-1.044898 1.567346c-86.726531 136.359184-303.542857 304.587755-312.424489 311.379592-10.44898 8.359184-22.987755 13.061224-36.571429 13.061225z" fill="#d81e06" p-id="3592"></path></svg>
+                                        <span v-if="post.iscollect_count > 0">{{post.iscollect_count}}</span>
                                     </div>
                                 </div>
                                 <div class="col-6 text-center">
@@ -75,12 +78,12 @@
                                     <div class="comment" v-if="commentisCollapsed[index] === true" @click="expandComment(index, post.ID)">
                                         <!-- 评论旁边也要显示有多少条评论 -->
                                         <svg t="1710466380019" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4748" width="200" height="200"><path d="M853.333333 768c35.413333 0 64-20.650667 64-55.978667V170.581333A63.978667 63.978667 0 0 0 853.333333 106.666667H170.666667C135.253333 106.666667 106.666667 135.253333 106.666667 170.581333v541.44C106.666667 747.285333 135.338667 768 170.666667 768h201.173333l110.016 117.44a42.752 42.752 0 0 0 60.586667 0.042667L651.904 768H853.333333z m-219.029333-42.666667h-6.250667l-115.797333 129.962667c-0.106667 0.106667-116.010667-129.962667-116.010667-129.962667H170.666667c-11.776 0-21.333333-1.621333-21.333334-13.312V170.581333A21.205333 21.205333 0 0 1 170.666667 149.333333h682.666666c11.776 0 21.333333 9.536 21.333334 21.248v541.44c0 11.754667-9.472 13.312-21.333334 13.312H634.304zM341.333333 490.666667a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z m170.666667 0a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z m170.666667 0a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z" fill="#3D3D3D" p-id="4749"></path></svg>
-                                        {{post.comments.count}}
+                                        <span v-if="post.comments.count > 0">{{post.comments.count}}</span>
                                     </div>
                                     <div class="comment" v-else @click="collapseComment(index)">
                                         <!-- 评论旁边也要显示有多少条评论 -->
                                         <svg t="1710466380019" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4748" width="200" height="200"><path d="M853.333333 768c35.413333 0 64-20.650667 64-55.978667V170.581333A63.978667 63.978667 0 0 0 853.333333 106.666667H170.666667C135.253333 106.666667 106.666667 135.253333 106.666667 170.581333v541.44C106.666667 747.285333 135.338667 768 170.666667 768h201.173333l110.016 117.44a42.752 42.752 0 0 0 60.586667 0.042667L651.904 768H853.333333z m-219.029333-42.666667h-6.250667l-115.797333 129.962667c-0.106667 0.106667-116.010667-129.962667-116.010667-129.962667H170.666667c-11.776 0-21.333333-1.621333-21.333334-13.312V170.581333A21.205333 21.205333 0 0 1 170.666667 149.333333h682.666666c11.776 0 21.333333 9.536 21.333334 21.248v541.44c0 11.754667-9.472 13.312-21.333334 13.312H634.304zM341.333333 490.666667a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z m170.666667 0a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z m170.666667 0a42.666667 42.666667 0 1 0 0-85.333334 42.666667 42.666667 0 0 0 0 85.333334z" fill="#3D3D3D" p-id="4749"></path></svg>
-                                        {{post.comments.count}}
+                                        <span v-if="post.comments.count > 0">{{post.comments.count}}</span>
                                     </div>    
                                 </div>
                             </div>
@@ -89,7 +92,7 @@
                                 <div class="col-12">
                                     <div class="mb-3">
                                         <!-- <label for="exampleFormControlTextarea1" class="form-label">Example textarea</label> -->
-                                        <textarea class="form-control" id="comment" rows="3" placeholder="在这里写评论..." maxlength="200" v-model="comments"></textarea>
+                                        <textarea class="form-control" id="comment" rows="3" placeholder="在这里写评论..." maxlength="200" v-model="comments[index]"></textarea>
                                         <!-- 提交评论到对应的数据库表中 -->
                                         <div class="postAComment" @click="postAComment(index, post.ID)">
                                             提交评论
@@ -204,12 +207,18 @@ export default {
                         count:0,
                         comments:[],
                     }
+                    posts.posts[i].iscollect_count = 0    // 每个作品被收藏（点赞）的数量
                 }
                 // console.log(posts)
-                // 再获取当前每个post的评论数
+                
                 for(let index = 0; index < posts.count; index ++ ) {
+                    // 再获取当前每个post的评论数
                     get_comments_by_post_id(index, posts.posts[index].ID)
+                    // 获得当前每个post的点赞数，以及每个帖子是否被当前用户收藏
+                    get_iscollect_count_by_post_id(index, posts.posts[index].ID, store.state.user.id)
                 }
+
+                
             },
             error(resp) {
                 ElMessage({
@@ -315,19 +324,20 @@ export default {
             
         }
         // 用户提交的评论
-        const comments = ref('')
+        // const comments = ref('')
+        const comments = ref(Array((posts.count ? posts.count : 100)).fill(''))
         // 评论提交
         const postAComment = (index, post_id)=>{
             if(store.state.user.is_login === false) {
                 router.push({
                     name:"Login",
                 })
-                comments.value = ''
+                comments.value[index] = ''
                 return 
             }
             // 登录的用户就可以存评论了
 
-            if(comments.value === '') {
+            if(comments.value[index] === '') {
                 ElMessage({
                     message: '评论不能为空',
                     type: 'warning',
@@ -345,7 +355,7 @@ export default {
                 data:{
                     post_id:post_id,
                     user_id:store.state.user.id,
-                    comment:comments.value,
+                    comment:comments.value[index],
                 },
                 headers:{
                     'Authorization': "Bearer " + store.state.user.jwt,
@@ -362,7 +372,7 @@ export default {
                         message: '评论成功',
                         type: 'success',
                     })
-                    comments.value = ""
+                    comments.value[index] = ""
                     //渲染每个帖子对应的评论列表, 成功后。
                     get_comments_by_post_id(index, post_id)
                 },
@@ -407,10 +417,94 @@ export default {
                 }
             })
         }
+        
+        //判断每个作品当前用户是否collect，默认是未收藏
+        const iscollect = ref(Array((posts.count ? posts.count : 100)).fill(false))
+
+        const changeCollectStatusForAPost = (index, post_id)=>{  //点击改变对该帖子的收藏状态
+            if(store.state.user.is_login === false) {
+                router.push({
+                    name:"Login",
+                })
+                return 
+            }
+            // 登录的用户就可以收藏了
+            // console.log(index, post_id, iscollect.value[index])
+            //根据post_id和user_id先判断数据库里面是否存在
+            $.ajax({
+                url:"http://127.0.0.1:9090/post/changecollectStatus/",
+                type:"POST",
+                data:{
+                    post_id:post_id,
+                    user_id:store.state.user.id,
+                    status: iscollect.value[index] === true ? 0 : 1,
+                },
+                headers:{
+                    'Authorization': "Bearer " + store.state.user.jwt,
+                },
+                success(resp) {
+                    // console.log(resp)
+                    if(resp.status !== 0) {
+                        ElMessage.error("收藏失败，请稍后重试")
+                        return 
+                    }
+                    //渲染每个帖子对应的评论列表, 成功后。
+                    // ElMessage.success("收藏成功")
+                    // 将当前帖子收藏数量+-1，不像后端请求，节约请求次数
+                    if(iscollect.value[index] === true) {
+                        iscollect.value[index] = false
+                        posts.posts[index].iscollect_count -= 1
+                    }else if(iscollect.value[index] === false) {
+                        iscollect.value[index] = true
+                        posts.posts[index].iscollect_count += 1
+                    }
+                },
+                error(resp) {
+                    ElMessage({
+                        message: '收藏失败，请稍后重试',
+                        type: 'error',
+                    })
+                    console.log(resp)
+                }
+            })
+
+        }
+
+        const get_iscollect_count_by_post_id = (index, post_id, user_id) => {  //不需要jwt认证
+            $.ajax({
+                url:"http://127.0.0.1:9090/homepost/getiscollectcountbypostid/",
+                type:"GET",
+                data:{
+                    post_id:post_id,
+                    user_id:user_id,
+                },
+                success(resp) {
+                    if(resp.status !== 0) {
+                        ElMessage.error("获取点赞数量失败")
+                        return 
+                    }
+                    // console.log(resp)
+                    posts.posts[index].iscollect_count = resp.data.count
+                    
+                    //更新iscollect的值
+                    if(resp.data.is_collected === 1) {
+                        iscollect.value[index] = true
+                    }else{
+                        iscollect.value[index] = false
+                    }
+                    
+                },
+                error(resp) {
+                    console.log(resp)
+                }
+            })
+        }
+
 
         return {
             posts,
             comments,
+            iscollect,
             // user,
             showModal,
             modalImage,
@@ -427,6 +521,8 @@ export default {
             postAComment,
             post_type_map,
             deleteAComment,
+            changeCollectStatusForAPost,
+            get_iscollect_count_by_post_id,
         }
     }
 }

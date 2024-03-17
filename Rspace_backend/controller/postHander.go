@@ -251,3 +251,74 @@ func DeleteCommentsByCommentId(c *gin.Context) {
 		"data":    nil,
 	})
 }
+
+type CollectionInfo struct {
+	PostID uint `form:"post_id" json:"post_id" xml:"post_id" binding:"required"`
+	UserID uint `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
+	Status *int `form:"status" json:"status" xml:"status" binding:"required"`
+}
+
+// 更改用户对作品的收藏状态
+func ChangeCollectStatus(c *gin.Context) {
+	//首先获得post_id,user_id,status
+	var collectionInfo CollectionInfo
+	if err := c.ShouldBind(&collectionInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    err.Error(),
+		})
+		return
+	}
+	// fmt.Printf("%#v-------------------\n", collectionInfo)
+
+	// 先进数据库查询：
+	var collection models.Collection
+	res := dao.DB.Where("post_id = ? AND user_id = ?", collectionInfo.PostID, collectionInfo.UserID).Find(&collection)
+	if res.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    nil,
+		})
+		return
+	}
+	if res.RowsAffected != 0 { //说明存在这条记录，直接修改状态即可
+		if err := dao.DB.Model(&collection).Update("status", collectionInfo.Status).Error; err != nil {
+			panic(err)
+		}
+	} else {
+		collect := models.Collection{PostID: collectionInfo.PostID, UserID: collectionInfo.UserID}
+		if err := dao.DB.Create(&collect).Error; err != nil {
+			panic(err)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "change collect success",
+		"data":    nil,
+	})
+}
+
+func GetIscollectCountByPostId(c *gin.Context) {
+	post_id := c.Query("post_id")
+	user_id := c.Query("user_id")
+	//查跟post_id相同的，并且status是1的有多少条
+	var count int64
+	if err := dao.DB.Model(&models.Collection{}).Where("post_id = ? AND status = ?", post_id, 1).Count(&count).Error; err != nil {
+		panic(err)
+	}
+	var is_collected int64
+	if err := dao.DB.Model(&models.Collection{}).Where("post_id = ? AND user_id = ? AND status = ?", post_id, user_id, 1).Count(&is_collected).Error; err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "get collect_count success",
+		"data": gin.H{
+			"count":        count,
+			"is_collected": is_collected,
+		},
+	})
+}
