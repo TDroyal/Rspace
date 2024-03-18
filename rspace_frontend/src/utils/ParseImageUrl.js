@@ -1,4 +1,7 @@
-const prefix = "http://127.0.0.1:9090/static/posts/"
+
+import BackendRootURL from '../common_resources/resource'
+
+const prefix = BackendRootURL + "/static/posts/"
 
 
 const ParseImageUrl = (imgstr)=>{

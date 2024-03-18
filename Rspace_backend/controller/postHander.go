@@ -57,7 +57,7 @@ func UploadPostImageHandler(c *gin.Context) {
 	// fmt.Println(id)
 
 	form, _ := c.MultipartForm() //上传多个文件
-	fmt.Printf("------------form=%#v\n", form)
+	// fmt.Printf("------------form=%#v\n", form)
 	files := form.File["images"]
 	content := form.Value["content"][0]
 	content_type := form.Value["type"][0]
@@ -65,7 +65,7 @@ func UploadPostImageHandler(c *gin.Context) {
 
 	var images []string
 
-	fmt.Println(content, content_type, files, "***************")
+	// fmt.Println(content, content_type, files, "***************")
 
 	// 保存照片在static文件夹下，保存失败的次数
 	err_cnt := 0
@@ -215,6 +215,16 @@ func GetCommentsByPostId(c *gin.Context) {
 		Order("comments.created_at desc").
 		Scan(&post_comment_data)
 	// fmt.Printf("%#v===============\n", post_comment_data)
+	if post_comment_data == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  0,
+			"message": "get posts success",
+			"data": gin.H{
+				"length": 0,
+			},
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "get posts success",

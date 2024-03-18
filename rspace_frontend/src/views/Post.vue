@@ -101,6 +101,7 @@ import { useStore} from 'vuex'
 import { ElMessage} from 'element-plus'
 import router from '@/router/index';   //@定位src目录
 import $ from 'jquery'
+import BackendRootURL from '../common_resources/resource'
 
 export default {
     name: "Post",
@@ -186,7 +187,7 @@ export default {
             // 最后，我们使用 $.ajax 发送请求到后端。请注意，我们设置了 processData 和 contentType 选项为 false，以确保 FormData 对象以正确的方式发送。
 
             $.ajax({
-                url:"http://127.0.0.1:9090/post/uploadimage/",
+                url: BackendRootURL + "/post/uploadimage/",
                 type:"POST",
                 data:formData,
                 processData: false,

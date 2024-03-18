@@ -163,3 +163,38 @@ func GetUserPostsHandler(c *gin.Context) {
 		"data":    normaluser.Posts,
 	})
 }
+
+func UpdateAvatar(c *gin.Context) {
+	// 先得到用户的id
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	id := claims.ID //得到用户id
+	fmt.Printf("%#v--------------\n", id)
+	file, _ := c.FormFile("avatar")
+	// fmt.Printf("------------avatar=%#v\n", file.Filename)
+	// 获得头像资源
+	dst := fmt.Sprintf("./static/avatar/%s", file.Filename)
+	fmt.Println(dst)
+	err := c.SaveUploadedFile(file, dst)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"messgae": "update avatar error",
+			"data":    nil,
+		})
+		return
+	}
+	// 存入数据库，并且返回file.Filename
+	if err := dao.DB.Model(&models.NormalUser{}).Where("id = ?", id).Update("avatar", file.Filename).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"messgae": "update avatar error",
+			"data":    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "update avatar success",
+		"data":    file.Filename,
+	})
+}

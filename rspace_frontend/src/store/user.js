@@ -2,6 +2,8 @@ import $ from 'jquery'
 
 import { jwtDecode } from 'jwt-decode'   //看官网才是最正确的选择
 import { ElMessage } from 'element-plus'
+import BackendRootURL from '../common_resources/resource'
+
 const ModuleUser = {
     state: {  //存全局数据
         id: "",
@@ -20,7 +22,7 @@ const ModuleUser = {
         updateUser(state, user) {
             state.id = user.id;
             state.username = user.username;
-            state.avatar = "http://127.0.0.1:9090/static/avatar/" + user.avatar;
+            state.avatar = BackendRootURL + "/static/avatar/" + user.avatar;
             // state.followerCount = user.followerCount;
             state.jwt = user.jwt;
             state.refresh_jwt = user.refresh_jwt;
@@ -38,7 +40,7 @@ const ModuleUser = {
         //单独更新头像
         updateAvatar(state, avatar)
         {
-            state.avatar = "http://127.0.0.1:9090/static/avatar/" + avatar
+            state.avatar = BackendRootURL + "/static/avatar/" + avatar
         },
 
         logout(state) {
@@ -60,7 +62,7 @@ const ModuleUser = {
         login: (context, data) => {
             // console.log(context)
             $.ajax({
-                url: "http://127.0.0.1:9090/api/token/",
+                url: BackendRootURL + "/api/token/",
                 type: "POST",
                 data: {
                     username: data.username,
@@ -82,7 +84,7 @@ const ModuleUser = {
 
                     setInterval(() => {  //每隔9分钟去刷新一次jwt
                         $.ajax({
-                            url: "http://127.0.0.1:9090/api/token/refresh/",
+                            url: BackendRootURL + "/api/token/refresh/",
                             type: "POST",
                             data: {
                                 refresh_jwt:refresh_jwt,
@@ -98,7 +100,7 @@ const ModuleUser = {
                     }, 1000 * 60 * 9);
 
                     $.ajax({
-                        url: "http://127.0.0.1:9090/myspace/getuserinfo/",
+                        url: BackendRootURL + "/myspace/getuserinfo/",
                         type: "GET",
                         data: {
                             user_id: jwt_obj.user_id,

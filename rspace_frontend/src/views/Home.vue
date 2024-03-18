@@ -157,6 +157,7 @@ import FormatDateTime from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // import prefix from '../utils/ParseImageUrl'
 import router from '@/router/index';   //@定位src目录
+import BackendRootURL from '../common_resources/resource'
 export default {
     name:"Home",
     components: { Content },
@@ -179,7 +180,7 @@ export default {
         })
         // 从数据库中读取最新的5条博客进行展示，返回的信息有哪些要仔细考虑
         $.ajax({
-            url:"http://127.0.0.1:9090/homepost/getposts/",
+            url: BackendRootURL + "/homepost/getposts/",
             type:"GET",
             success(resp) {
                 // console.log(resp)
@@ -201,7 +202,7 @@ export default {
                     // console.log(imageurl)
                     posts.posts[i].image = ParseImageUrl(imgstr)
                     posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt)
-                    posts.posts[i].avatar = "http://127.0.0.1:9090/static/avatar/" + posts.posts[i].avatar
+                    posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + posts.posts[i].avatar
                     posts.posts[i].type = post.type
                     posts.posts[i].comments = {
                         count:0,
@@ -262,7 +263,7 @@ export default {
                 comments:[],
             })
             $.ajax({
-                url:"http://127.0.0.1:9090/homepost/getcommentsbypostid/",
+                url: BackendRootURL + "/homepost/getcommentsbypostid/",
                 type:"GET",
                 data:{
                     post_id:post_id,
@@ -280,11 +281,22 @@ export default {
                     comment_list.count = resp.data.length
                     comment_list.comments = resp.data
                     for(let i = 0; i < comment_list.count; i ++ ) {
-                        comment_list.comments[i].avatar = "http://127.0.0.1:9090/static/avatar/" + comment_list.comments[i].avatar
+                        comment_list.comments[i].avatar = BackendRootURL + "/static/avatar/" + comment_list.comments[i].avatar
                         comment_list.comments[i].CreatedAt = FormatDateTime(comment_list.comments[i].CreatedAt)
                     } 
                     //把comment_list放到对应的index下
-                    posts.posts[index].comments = comment_list
+                    if(comment_list.count === 0) {
+                        // console.log(55555555555)
+                        posts.posts[index].comments = {
+                            count:0,
+                            comments:[],
+                        }
+                    }else {
+                        // console.log(66666666666666666666, comment_list.count)
+                        posts.posts[index].comments = comment_list
+                    }
+                    
+                    // console.log(posts.posts[index].comments)
                     // console.log(posts)
                     // console.log(index, posts.posts[index].comments)
                 },
@@ -350,7 +362,7 @@ export default {
             //评论应该先显示在前端（把新的评论push到评论列表中即可），然后提醒评论成功，然后将评论存入数据库，然后清空comments.value = ''
             
             $.ajax({
-                url:"http://127.0.0.1:9090/post/uploadcomment/",
+                url: BackendRootURL + "/post/uploadcomment/",
                 type:"POST",
                 data:{
                     post_id:post_id,
@@ -388,10 +400,10 @@ export default {
         }
 
         const deleteAComment = (index, post_id,comment_id)=>{  //获得comment的id删
-            console.log(comment_id)
+            // console.log(comment_id)
             //删完后，重新查询一次评论
             $.ajax({
-                url:"http://127.0.0.1:9090/homepost/deletecommentsbycommentid/",
+                url: BackendRootURL + "/homepost/deletecommentsbycommentid/",
                 type:"DELETE",
                 // data:{
                 //     comment_id: comment_id,
@@ -432,7 +444,7 @@ export default {
             // console.log(index, post_id, iscollect.value[index])
             //根据post_id和user_id先判断数据库里面是否存在
             $.ajax({
-                url:"http://127.0.0.1:9090/post/changecollectStatus/",
+                url: BackendRootURL + "/post/changecollectStatus/",
                 type:"POST",
                 data:{
                     post_id:post_id,
@@ -472,7 +484,7 @@ export default {
 
         const get_iscollect_count_by_post_id = (index, post_id, user_id) => {  //不需要jwt认证
             $.ajax({
-                url:"http://127.0.0.1:9090/homepost/getiscollectcountbypostid/",
+                url: BackendRootURL + "/homepost/getiscollectcountbypostid/",
                 type:"GET",
                 data:{
                     post_id:post_id,

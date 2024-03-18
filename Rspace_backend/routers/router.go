@@ -36,6 +36,7 @@ func SetupRouter() *gin.Engine {
 		userGroup.GET("/getuserinfo/", middleware.JWTAuth(), controller.GetUserInfoByUserIDHandler) //根据user_id返回用户的个人信息
 		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfoHandler)
 		userGroup.GET("/getuserposts/", middleware.JWTAuth(), controller.GetUserPostsHandler)
+		userGroup.POST("/updateavatar/", middleware.JWTAuth(), controller.UpdateAvatar)
 	}
 
 	// 首页帖子的获取

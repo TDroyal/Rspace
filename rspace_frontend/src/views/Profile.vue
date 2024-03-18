@@ -26,6 +26,7 @@ import { ElMessage } from 'element-plus'
 import FormatDateTime from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 
+import BackendRootURL from '../common_resources/resource'
 export default {
     name: "Profile",
     components: {Content,UserProfileInfo,UserPostLists,},
@@ -53,7 +54,7 @@ export default {
                 // console.log(is_me.value)
                 try {
                     const resp = await $.ajax({
-                        url: "http://127.0.0.1:9090/myspace/getuserinfo/",
+                        url: BackendRootURL + "/myspace/getuserinfo/",
                         type: "GET",
                         data: {
                             user_id: user_id,
@@ -69,7 +70,7 @@ export default {
                     user.id = resp.data.id,
                     user.username = resp.data.name,
                     user.age = resp.data.age,
-                    user.avatar = 'http://127.0.0.1:9090/static/avatar/' + resp.data.avatar,
+                    user.avatar = BackendRootURL + '/static/avatar/' + resp.data.avatar,
                     user.gender = resp.data.gender,
                     user.address = resp.data.address,
                     user.introduction = resp.data.introduction
@@ -83,7 +84,7 @@ export default {
         const getUserPosts = async () => {
             try {
                 const resp = await $.ajax({
-                    url: "http://127.0.0.1:9090/myspace/getuserposts/",
+                    url:  BackendRootURL + "/myspace/getuserposts/",
                     type: "GET",
                 data: {
                     user_id: user_id,

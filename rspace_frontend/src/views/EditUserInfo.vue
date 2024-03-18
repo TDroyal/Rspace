@@ -4,8 +4,17 @@
             <div class="card-body">
                 <div class="row justify-content-center">
                     <div class="col-2">
-                        <img class="img-fluid my-avatar" :src="$store.state.user.avatar" alt="" >
-                        <span class="avatar-text">更换头像</span>
+                        <el-upload
+                            action="#"
+                            :http-request="httpRequest"   
+                            :show-file-list="false"
+                            :before-upload="beforeAvatarUpload"
+                        >   
+                            <img class="img-fluid my-avatar" :src="$store.state.user.avatar" alt="" >
+                            <span class="avatar-text">更换头像</span>
+                        </el-upload>
+                        <!-- <img class="img-fluid my-avatar" :src="$store.state.user.avatar" alt="" >
+                        <span class="avatar-text">更换头像</span> -->
                         <!-- <div class="text-center username">{{$store.state.user.username}}</div> -->
                     </div>
                 </div>
@@ -83,7 +92,7 @@ import Content from '../components/Content.vue'
 import {useStore} from 'vuex'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
-
+import BackendRootURL from '../common_resources/resource'
 export default {
     name:"EditUserInfo",
     components:{Content},
@@ -145,7 +154,7 @@ export default {
 
             // 通过post方法将修改后的userinfo传回去，不将头像传回去
             $.ajax({
-                url:'http://127.0.0.1:9090/myspace/updateuserinfo/',
+                url: BackendRootURL + '/myspace/updateuserinfo/',
                 type:'POST',
                 data: {
                     // id:userinfo.id,
@@ -205,6 +214,50 @@ export default {
             // userinfo.gender = gender_map[gender_select.value]
         }
 
+        const beforeAvatarUpload = (rawFile) => {
+            // console.log(rawFile)
+            if (rawFile.type !== 'image/jpg' && rawFile.type !== 'image/png' && rawFile.type !== 'image/jpeg') {
+                // 不是这个类型的就应该删掉该文件
+                ElMessage.warning('图片类型只能为JPG、PNG、JPEG格式')
+                
+                return false
+            }
+            if (rawFile.size / 1024 / 1024 > 2) {
+                // console.log('caonm')
+                ElMessage.warning('图片大小不能超过2MB')
+                return false
+            }
+            return true  //返回true才能上传图片
+        }
+
+        const httpRequest = (data)=>{   //覆盖默认的 Xhr 行为，允许自行实现上传文件的请求
+            const formData = new FormData();
+            formData.append('avatar', data.file);
+            $.ajax({
+                url: BackendRootURL + "/myspace/updateavatar/",
+                type:"POST",
+                data: formData,
+                // 下面两行必须要上，不然报错
+                processData: false,
+                contentType: false,
+                headers:{
+                    'Authorization': "Bearer " + userinfo.jwt,
+                },
+                success(resp) {
+                    if(resp.status !== 0) {
+                        ElMessage.error("更换头像失败，请稍后重试!")
+                        return
+                    }
+                    ElMessage.success("更换头像成功")
+                    store.commit("updateAvatar", resp.data)
+                },
+                error(resp) {
+                    ElMessage.error("更换头像失败，请稍后重试!")
+                    console.log(resp)
+                }
+            })
+        }
+
         return {
             // store,
             userinfo,
@@ -215,6 +268,8 @@ export default {
             // gender_map,
             modify_userinfo,
             change_gender,
+            beforeAvatarUpload,
+            httpRequest,
         }
     },
 }
