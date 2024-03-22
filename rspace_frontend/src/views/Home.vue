@@ -106,11 +106,11 @@
                                     <div class="horizontal-line" style="margin-top: 10px;"></div>
                                     <div class="comment-card-list" >
                                         <div class="row" style="margin-top: 10px;">
-                                            <div class="col-1">
+                                            <div class="col-md-1 col-3">
                                                 <img class="img-fluid avatar" :src="comment.avatar" @click="enterUserProfile(comment.user_id)" alt="">
                                             </div>
                                                 <!-- align-items: center; -->
-                                            <div class="col-5" style="display: flex;  padding-left: 0px; ">
+                                            <div class="col-md-5 col-9" style="display: flex;  padding-left: 0px; ">
                                                 <div class="row">
                                                     <div class="col-12 username" style="font-weight: bold;" @click="enterUserProfile(comment.user_id)">
                                                         {{comment.name}}
@@ -122,10 +122,10 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-11">
+                                            <div class="col-md-11 col-9">
                                                 {{comment.comment}}
                                             </div>
-                                            <div class="col-1 delete-comment-button" v-if="comment.user_id === $store.state.user.id" @click="deleteAComment(index, post.ID, comment.id)">删除</div>
+                                            <div class="col-md-1 col-3 delete-comment-button" v-if="comment.user_id === $store.state.user.id" @click="deleteAComment(index, post.ID, comment.id)">删除</div>
                                         </div>
                                     </div>
                                 </div>
@@ -647,6 +647,7 @@ svg {
 
 .username:hover {
     cursor: pointer;
+    color: lightblue;
 }
 
 .comment:hover {

@@ -332,3 +332,33 @@ func GetIscollectCountByPostId(c *gin.Context) {
 		},
 	})
 }
+
+type GetPostID struct {
+	PostID uint `form:"post_id" json:"post_id" xml:"post_id" binding:"required"`
+}
+
+func DeletePostByPostId(c *gin.Context) {
+	var id GetPostID
+	// delete前端传json过来，我才能获取到数据
+	if err := c.BindJSON(&id); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "delete post unsuccess",
+			"data":    nil,
+		})
+		return
+	}
+	if err := dao.DB.Delete(&models.Post{}, id.PostID).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "delete post unsuccess",
+			"data":    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "delete post success",
+		"data":    nil,
+	})
+}

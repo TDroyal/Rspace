@@ -50,6 +50,8 @@ func SetupRouter() *gin.Engine {
 		postGroup.GET("/getcommentsbypostid/", controller.GetCommentsByPostId)
 		postGroup.DELETE("/deletecommentsbycommentid/", middleware.JWTAuth(), controller.DeleteCommentsByCommentId)
 		postGroup.GET("/getiscollectcountbypostid/", controller.GetIscollectCountByPostId)
+		// 根据帖子id删除帖子
+		postGroup.DELETE("/deletepostbypostid/", middleware.JWTAuth(), controller.DeletePostByPostId)
 	}
 
 	// 发帖

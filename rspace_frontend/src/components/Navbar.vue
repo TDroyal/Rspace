@@ -1,7 +1,10 @@
 <template>
     <nav class="navbar navbar-expand-lg mynav">
         <div class="container">
-            <router-link class="navbar-brand" :to="{name:'Home'}">R空间</router-link>
+            <router-link class="navbar-brand" :to="{name:'Home'}">
+                <svg t="1711091592185" class="icon" viewBox="0 0 1162 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11316" width="200" height="200"><path d="M1162 453.2C1162 238.2 901.8 64 581 64S0 238.2 0 453.2C0 644.8 206.6 804 478.8 836.2V960h198.2v-123c48.6-5.4 95.2-14.8 138.8-27.8L896 960h224l-134.8-227.4c109-70.8 176.8-169.8 176.8-279.4z m-933.6 29c0-147 197.8-266 441.6-266s423.8 81.4 423.8 266c0 100.2-53 170-140.6 212.8-4.8-3.2-9.4-5.8-12.8-7.4-20.4-10.4-55.6-21-55.6-21s173.2-12.8 173.2-185.4-181.2-175.8-181.2-175.8h-398V722c-148.2-43-250.4-134.2-250.4-239.8z m450.2 76.6v-111.2c115.6 0 175.6-13.6 175.6 54.6 0 73-76.4 56.6-175.6 56.6z m-1.8 145H730c21.6 0 37.8 23.4 48 38.4-32.2 3.8-66 5.6-101.2 5.8v-44.2z" fill="#2c2c2c" p-id="11317"></path></svg>
+                空间
+            </router-link>
             <button 
                 class="navbar-toggler" 
                 type="button" 
@@ -110,6 +113,11 @@ a{
     top: 0;
     width: 100vw;
     z-index: 1000;
+}
+
+svg {
+    max-width: 30px;
+    max-height: 30px;
 }
 
 </style>

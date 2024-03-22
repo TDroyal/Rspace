@@ -23,12 +23,15 @@
                                             <img class="img-fluid avatar" :src="userinfo.avatar" alt="">
                                         </div>
                                         <!-- align-items: center; -->
-                                        <div class="col-md-5 col-9" style="display: flex;  padding-left: 0px; ">
-                                            <div class="row">
-                                                <div class="col-12" style="font-weight: bold;">
+                                        <div class="col-md-11 col-9" style="display: flex;  padding-left: 0px; ">
+                                            <div class="row" style="width: 100%;">
+                                                <div class="col-5 col-md-9" style="font-weight: bold;">
                                                     {{userinfo.username}}
                                                 </div>
-                                                <div class="col-12 post-time" style="color: gray;">
+                                                <div class="col-7 col-md-3 post-details" @click="enterPostDetail(post.ID)">
+                                                    查看详情
+                                                </div>
+                                                <div class="col-12 post-time" style="color: gray; padding-right: 0px;">
                                                     {{post.CreatedAt}}
                                                 </div>
                                             </div>
@@ -114,7 +117,7 @@
 
 <script>
 import { ref } from 'vue'
-
+import router from '@/router/index';   //@定位src目录
 export default {
     name:"UserPostLists",
     components:{},
@@ -176,6 +179,17 @@ export default {
             // expandedIndex.value = -1;
         };
 
+
+         // 进入帖子详情页面
+         const enterPostDetail = (post_id)=> {
+            router.push({
+                name:"PostDetail",
+                params:{
+                    postid:post_id
+                },
+            })
+        }
+
         return {
             showModal,
             modalImage,
@@ -185,6 +199,7 @@ export default {
             // expandedIndex,
             expandCard,
             collapseCard,
+            enterPostDetail,
             // isPostCollapsed,
         }
     }
@@ -285,9 +300,16 @@ export default {
   outline: none;
 }
 
+.post-details{
+    /* float: right; */
+    padding-right: 0px;
+    font-weight: bold;
+    text-align: right;
+}
 
-/* .col-3 {
-    padding: 0px;
-} */
+.post-details:hover {
+    color: rgb(109, 193, 221);
+    cursor: pointer;
+}
 
 </style>
