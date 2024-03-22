@@ -7,6 +7,7 @@ import Profile from '../views/Profile.vue'
 import Post from '../views/Post.vue'
 import Star from '../views/Star.vue'
 import EditUserInfo from '../views/EditUserInfo.vue'
+import PostDetail from '../views/PostDetail.vue'
 
 const routes = [
   {
@@ -42,6 +43,11 @@ const routes = [
     path:'/edituserinfo/',
     name:'EditUserInfo',
     component:EditUserInfo,
+  },
+  {
+    path:'/post/:postid',
+    name:"PostDetail",
+    component:PostDetail,
   },
 ]
 

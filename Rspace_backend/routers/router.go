@@ -43,6 +43,9 @@ func SetupRouter() *gin.Engine {
 	postGroup := r.Group("/homepost")
 	{
 		postGroup.GET("/getposts/", controller.GetHomePost)
+		// 根据帖子id获取帖子信息和用户基本信息
+		postGroup.GET("/getpostbypostid/", controller.GetPostByPostId)
+
 		// 根据帖子id获取评论(待完成)
 		postGroup.GET("/getcommentsbypostid/", controller.GetCommentsByPostId)
 		postGroup.DELETE("/deletecommentsbycommentid/", middleware.JWTAuth(), controller.DeleteCommentsByCommentId)

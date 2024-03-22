@@ -2,14 +2,14 @@
     <!-- 非图片文件也能上传问题的bug还已解决，但是不能从列表中自动删除 -->
     <Content>
         <div class="row justify-content-center">
-            <div class="col-9">
+            <div class="col-md-9 col-12">
                 <div class="card card-single">
                     <div class="card-body">
                         <div class="row justify-content-center">
-                            <div class="col-9">
+                            <div class="col-6 col-md-9">
                                 <div class="post-title" >发帖</div>
                             </div>
-                            <div class="col-3">
+                            <div class="col-6 col-md-3">
                                 <!-- <label for="post_type" class="form-label"></label> -->
                                 <select class="form-select form-select-md" aria-label=".form-select-md example" style="font-weight: bold;" id="post_type" v-model="content_type">
                                     <option value="0" selected>帖子类型</option>
@@ -72,7 +72,7 @@
                                     :on-change="checkImage"
                                     :file-list="fileList"
                                     :auto-upload="false">
-                                    <el-button  size="large" type="primary" style="width: 100%;">选取图片</el-button>
+                                    <el-button size="large" type="primary" style="width: 100%;">选取图片</el-button>
                                 </el-upload>
                             </div>
                             <div class="col-12">
@@ -81,9 +81,9 @@
                         </div>
                         <!-- <el-button size="large" type="success" @click="submitUpload">上传到服务器</el-button> -->
                         <div class="row" style="margin-top: 20px;">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-center">
-                                    <button type="button" class="btn btn-primary position-relative" @click="submitUpload">点击分享</button>
+                            <div class="col-12 col-md-4" style="margin: 0 auto;">
+                                <div class="d-flex justify-content-center" >
+                                    <button type="button" style="width: 100%;" class="btn btn-primary position-relative" @click="submitUpload">点击分享</button>
                                 </div>
                             </div>
                         </div>
@@ -316,4 +316,7 @@ button{
     color: gray;
 }
 
+.upload-demo{
+    width: 100%;
+}
 </style>

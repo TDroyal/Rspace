@@ -19,11 +19,11 @@
                                 <div class="card-body">
                                     <!-- 展示头像和姓名 -->
                                     <div class="row">
-                                        <div class="col-1">
+                                        <div class="col-md-1 col-3">
                                             <img class="img-fluid avatar" :src="userinfo.avatar" alt="">
                                         </div>
                                         <!-- align-items: center; -->
-                                        <div class="col-5" style="display: flex;  padding-left: 0px; ">
+                                        <div class="col-md-5 col-9" style="display: flex;  padding-left: 0px; ">
                                             <div class="row">
                                                 <div class="col-12" style="font-weight: bold;">
                                                     {{userinfo.username}}
@@ -226,6 +226,9 @@ export default {
 
 .avatar {
     border-radius: 50%;
+    /* min-width: 30px; */
+    /* padding-top: 6px; */
+    /* max-width: 50px; */
 }
 
 /* 通过将aspect-ratio属性设置为1/1，图片的宽度和高度将保持相等。
@@ -283,8 +286,8 @@ export default {
 }
 
 
-.col-3 {
+/* .col-3 {
     padding: 0px;
-}
+} */
 
 </style>

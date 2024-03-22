@@ -1,13 +1,16 @@
 <template>
     <Content>
         <div class="row justify-content-center">
-            <div class="col-9">
+            <div class="col-md-9 col-12">
                 <div v-for="(post, index) in posts.posts" :key="post.ID" >
                     <div class="card card-single">
                         <div class="card-body">
                             <div class="row justify-content-center">
-                                <div class="col-12">
+                                <div class="col-9">
                                     <div class="post-type">{{post_type_map[post.type]}}</div>
+                                </div>
+                                <div class="col-3" >
+                                    <div class="post-details" @click="enterPostDetail(post.ID)">详情</div>
                                 </div>
                             </div>
                             <!-- <br/> -->
@@ -16,11 +19,11 @@
                                 <div class="card-body">
                                     <!-- 展示头像和姓名 -->
                                     <div class="row">
-                                        <div class="col-1">
+                                        <div class="col-3 col-md-1">
                                             <img class="img-fluid avatar" :src="post.avatar" @click="enterUserProfile(post.user_id)" alt="">
                                         </div>
                                         <!-- align-items: center; -->
-                                        <div class="col-5" style="display: flex;  padding-left: 0px; ">
+                                        <div class="col-8 col-md-5" style="display: flex;  padding-left: 0px; ">
                                             <div class="row">
                                                 <div class="col-12 username" style="font-weight: bold;" @click="enterUserProfile(post.user_id)">
                                                     {{post.name}}
@@ -511,7 +514,16 @@ export default {
                 }
             })
         }
-
+        
+        // 进入帖子详情页面
+        const enterPostDetail = (post_id)=> {
+            router.push({
+                name:"PostDetail",
+                params:{
+                    postid:post_id
+                },
+            })
+        }
 
         return {
             posts,
@@ -535,6 +547,7 @@ export default {
             deleteAComment,
             changeCollectStatusForAPost,
             get_iscollect_count_by_post_id,
+            enterPostDetail,
         }
     }
 }
@@ -573,6 +586,8 @@ svg {
 
 .avatar {
     border-radius: 50%;
+    /* min-width: 30px; */
+    /* max-width: 50px; */
 }
 
 .img-thumbnail {
@@ -674,4 +689,15 @@ svg {
     cursor: pointer;
     color: blue;
 }
+
+.post-details{
+    float: right;
+    font-weight: bold;
+}
+
+.post-details:hover {
+    color: rgb(109, 193, 221);
+    cursor: pointer;
+}
+
 </style>

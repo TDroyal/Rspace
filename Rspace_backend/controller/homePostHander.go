@@ -35,3 +35,23 @@ func GetHomePost(c *gin.Context) {
 		"data":    result,
 	})
 }
+
+// 根据帖子id获取帖子信息
+func GetPostByPostId(c *gin.Context) {
+	var result PostsWithUserInfo
+	post_id := c.Query("postid")
+	// fmt.Printf("%#v------\n", post_id)
+	if err := dao.DB.Model(&models.Post{}).Where("posts.id = ?", post_id).Select("posts.id, posts.created_at, posts.updated_at, posts.deleted_at, posts.content, posts.image, posts.type, posts.user_id, normal_users.name, normal_users.avatar").Joins("JOIN normal_users ON normal_users.id = posts.user_id").Scan(&result).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "get post error",
+			"data":    nil,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "get post success",
+		"data":    result,
+	})
+}

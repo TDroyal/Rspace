@@ -3,7 +3,7 @@
         <div class="card card-out">
             <div class="card-body">
                 <div class="row justify-content-center">
-                    <div class="col-2">
+                    <div class="col-md-2 col-6">
                         <el-upload
                             action="#"
                             :http-request="httpRequest"   
@@ -20,13 +20,13 @@
                 </div>
                 <form @submit.prevent="modify_userinfo" style="margin-top: 20px;">
                     <div class="row justify-content-center" >
-                        <div class="col-5">
+                        <div class="col-md-5 col-12">
                             <div class="mb-3">
                                 <label for="username" class="form-label">昵称</label>
                                 <input type="text" class="form-control" id="username" placeholder="你的昵称" v-model="userinfo.username">
                             </div>
                         </div>
-                        <div class="col-5">
+                        <div class="col-md-5 col-12">
                             <div class="mb-3">
                                 <label for="gender" class="form-label">性别</label>
                                 <div class="row" id="gender">
@@ -46,13 +46,13 @@
                                 <!-- <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="请选择你的性别" v-model="userinfo.gender" > -->
                             </div>
                         </div>
-                        <div class="col-5">
+                        <div class="col-md-5 col-6">
                             <div class="mb-3">
                                 <label for="age" class="form-label">年龄</label>
                                 <input type="number" class="form-control" id="age" placeholder="你的年龄" v-model="userinfo.age">
                             </div>
                         </div>
-                        <div class="col-5">
+                        <div class="col-md-5 col-6">
                             <!-- <div class="mb-3">
                                 <label for="exampleFormControlInput1" class="form-label">地址</label>
                                 <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="你所在地" v-model="userinfo.address">
@@ -67,7 +67,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-10">
+                        <div class="col-md-10 col-12">
                             <div class="mb-3">
                                 <label for="introduction" class="form-label">个人介绍</label>
                                 <textarea class="form-control" id="introduction" rows="3" placeholder="关于你的个性、兴趣..." v-model="userinfo.introduction"></textarea>
@@ -75,7 +75,7 @@
                         </div>
                     </div>
                     <div class="row justify-content-center" style="margin-top: 20px;">
-                        <div class="col-3 d-flex">
+                        <div class="col-md-3 col-12 d-flex">
                             <button type="submit" class="btn position-relative">保存</button>
                         </div>    
                     </div>
@@ -299,7 +299,7 @@ export default {
 }
 
 button{
-    width: 80%;
+    width: 100%;
     margin: auto;
     background-color: #EFF9F2;
     color: #2DB55D;

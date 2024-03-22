@@ -1,12 +1,12 @@
 <template>
     <Content>
         <div class="row">
-            <div class="col-3" style="background-color: #F7F8FA;">
+            <div class="col-md-3 col-12" style="background-color: #F7F8FA;">
                 <!-- 头像 写成一个子组件 -->
                 <UserProfileInfo v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
             </div>
 
-            <div class="col-9">
+            <div class="col-md-9 col-12">
                 <UserPostLists :posts="posts" :userinfo="user" :is_me="is_me"></UserPostLists>
             </div>
         </div>
