@@ -25,11 +25,11 @@
                                         <!-- align-items: center; -->
                                         <div class="col-md-11 col-9" style="display: flex;  padding-left: 0px; ">
                                             <div class="row" style="width: 100%;">
-                                                <div class="col-5 col-md-9" style="font-weight: bold;">
+                                                <div class="col-8 col-md-9" style="font-weight: bold; padding-right: 0px;">
                                                     {{userinfo.username}}
                                                 </div>
-                                                <div class="col-7 col-md-3 post-details" @click="enterPostDetail(post.ID)">
-                                                    查看详情
+                                                <div class="col-4 col-md-3 post-details" @click="enterPostDetail(post.ID)">
+                                                    详情
                                                 </div>
                                                 <div class="col-12 post-time" style="color: gray; padding-right: 0px;">
                                                     {{post.CreatedAt}}

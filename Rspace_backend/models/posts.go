@@ -14,6 +14,6 @@ type Post struct {
 	UserID   uint      `gorm:"column:user_id;" form:"user_id" json:"user_id" xml:"user_id"  binding:"required"`               //外键名
 	Comments []Comment `gorm:"foreignKey:PostID;references:ID"`
 	// 一个帖子有多个评论
-	//一个帖子有多个收藏
+	//一个帖子有多个用户收藏
 	Collections []Collection `gorm:"foreignKey:PostID;references:ID"`
 }

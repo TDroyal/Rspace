@@ -21,20 +21,26 @@
                         </div>
                     </div>
                     <div class="row justify-content-center" style="margin-top: 10px;">
-                        <div class="col-6">
-                            <div class="text-center">关注者</div>
-                            <div class="text-center">2</div>
-                        </div>|
-                        <div class="col-5">
-                            <div class="text-center">关注了</div>
-                            <div class="text-center">10</div>
+                        <div class="col-5 follow-list">
+                            <div class="text-center follow-title">关注了</div>
+                            <div class="text-center">{{userinfo.followercount}}</div>
+                        </div><span style="width: 10px; padding: 0px; color: gray; text-align: center;">|</span>
+                        <div class="col-5 fans-list">
+                            <div class="text-center follow-title">关注者</div>
+                            <div class="text-center">{{userinfo.fanscount}}</div>
                         </div>
                     </div>
                     <!-- 点击头像进入编辑个人信息 -->
                     <div class="row justify-content-center" style="margin-top: 10px;">
                         <!-- d-flex  position-relative margin:auto; 就可以居中-->
                         <div class="col-12  d-flex" v-if="is_me === true">
-                            <button type="button" class="btn  position-relative" @click="editPersionalInfomation">编辑个人信息</button>
+                            <button type="button" class="btn  position-relative edit-userinfo" @click="editPersionalInfomation">编辑个人信息</button>
+                        </div>
+                        <div class="col-12  d-flex" v-if="is_me === false && userinfo.is_followed === false">
+                            <button type="button" class="btn  position-relative follow" @click="follow">+ 关注</button>
+                        </div>
+                        <div class="col-12  d-flex" v-if="is_me === false && userinfo.is_followed === true">
+                            <button type="button" class="btn  position-relative unfollow" @click="unfollow">取消关注</button>
                         </div>
                     </div>
                 </div>
@@ -77,6 +83,8 @@
 import {useStore} from 'vuex'
 import router from '@/router/index';   //@定位src目录
 import { reactive } from 'vue';
+import $ from 'jquery'
+import BackendRootURL from '../common_resources/resource';
 
 export default {
     name:"UserProfileInfo",
@@ -91,8 +99,10 @@ export default {
             required:true,
         }
     },
-    setup() {
+    setup(props, context) {
         // console.log(props.is_me)
+        // console.log(context)
+        // console.log(props)
         const store = useStore()
         const gender_map = reactive({
             0:'',
@@ -104,10 +114,50 @@ export default {
             router.push({name:"EditUserInfo"})
         }
 
+        const follow = () => {  //对该用户进行关注
+            $.ajax({
+                url: BackendRootURL + "/myspace/follow/",
+                type: "POST",
+                data: {
+                    user_id: props.userinfo.id,
+                },
+                headers: {
+                    'Authorization': "Bearer " + store.state.user.jwt,
+                },
+                success(resp) {
+                    // console.log(resp)
+                    if (resp.status === 0) {
+                        context.emit('follow');  //调用父组件传过来的函数
+                    }
+                }
+            });
+        };
+
+        const unfollow = () => {   //对该用户取消关注
+            $.ajax({
+                url: BackendRootURL + "/myspace/follow/",
+                type: "POST",
+                data: {
+                    user_id: props.userinfo.id,
+                },
+                headers: {
+                    'Authorization': "Bearer " + store.state.user.jwt,
+                },
+                success(resp) {
+                    if (resp.status === 0) {
+                        context.emit('unfollow');
+                    }
+                }
+            });
+        }
+
+
         return {
             store,
             gender_map,
             editPersionalInfomation,
+            follow,
+            unfollow,
         }
     }
 }
@@ -116,7 +166,7 @@ export default {
 </script>
 
 <style scoped>
-button{
+.edit-userinfo{
     width: 80%;
     margin: auto;
     background-color: #EFF9F2;
@@ -124,10 +174,37 @@ button{
     border: none;
 }
 
-button:hover {
+.edit-userinfo:hover {
     background-color: #92e4aa;
     color: white;
 }
+
+.follow {
+    width: 80%;
+    margin: auto;
+    background-color: #2DB55D;
+    color: white;
+    border: none;
+}
+
+.follow:hover {
+    background-color: #269A4F;
+    color: white;
+}
+
+.unfollow {
+    width: 80%;
+    margin: auto;
+    background-color: #F2F3F4;
+    color: #262626BF;
+    border: none;
+}
+
+.unfollow:hover {
+    background-color: #E5E6E8;
+    color: #262626BF;
+}
+
 
 svg {
     max-height: 20px;
@@ -156,6 +233,18 @@ img {
 
 .introduction{
     font-weight: bold;   
+}
+
+.follow-title{
+    color: gray;
+}
+
+.follow-list {
+    cursor: pointer;
+}
+
+.fans-list {
+    cursor: pointer;
 }
 
 </style>

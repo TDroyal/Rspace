@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col-md-3 col-12" style="background-color: #F7F8FA;">
                 <!-- 头像 写成一个子组件 -->
-                <UserProfileInfo v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
+                <UserProfileInfo @follow="follow" @unfollow="unfollow" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
             </div>
 
             <div class="col-md-9 col-12">
@@ -57,24 +57,31 @@ export default {
                         url: BackendRootURL + "/myspace/getuserinfo/",
                         type: "GET",
                         data: {
-                            user_id: user_id,
+                            user_id: user_id,  //这个是当前查看的用户id
                         },
                         headers: {
-                            'Authorization': "Bearer " + store.state.user.jwt,
+                            'Authorization': "Bearer " + store.state.user.jwt,  //这个里面存入的是当前登录的用户id
                         },
                     });
 
                     if (resp.status != 0) {
                         return;
                     }
-                    user.id = resp.data.id,
-                    user.username = resp.data.name,
-                    user.age = resp.data.age,
-                    user.avatar = BackendRootURL + '/static/avatar/' + resp.data.avatar,
-                    user.gender = resp.data.gender,
-                    user.address = resp.data.address,
-                    user.introduction = resp.data.introduction
+                    // console.log(resp.data)
+                    user.id = resp.data.normal_userinfo.id,
+                    user.username = resp.data.normal_userinfo.name,
+                    user.age = resp.data.normal_userinfo.age,
+                    user.avatar = BackendRootURL + '/static/avatar/' + resp.data.normal_userinfo.avatar,
+                    user.gender = resp.data.normal_userinfo.gender,
+                    user.address = resp.data.normal_userinfo.address,
+                    user.introduction = resp.data.normal_userinfo.introduction
+                    // 再得到后端传过来的粉丝数量，关注数量，以及当前登录用户是否关注此用户
+                    user.fanscount = resp.data.fanscount
+                    user.followercount = resp.data.followercount
+                    user.is_followed = resp.data.is_followed
+
                     // console.log("111111111111111", user);
+                    // console.log(user)
                 } catch (error) {
                     console.log(error);
                 }
@@ -138,6 +145,22 @@ export default {
         }, { immediate: true }); // immediate: true 表示在组件初始化时立即执行
 
         // loadData();
+        
+        const follow = () => {
+            // console.log(555555)
+            if (user.is_followed) return;
+            // console.log(55555555555555555555)
+            user.is_followed = true;
+            user.fanscount ++ ;
+        };
+
+        const unfollow = () => {
+            // console.log(666666)
+            if (!user.is_followed) return;
+            user.is_followed = false;
+            user.fanscount -- ;
+        };
+
 
         return {
             // store,
@@ -146,6 +169,8 @@ export default {
             is_me,
             // userinfo,
             posts,
+            follow,
+            unfollow,
         }
     }
 }

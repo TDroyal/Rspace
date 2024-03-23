@@ -46,37 +46,73 @@ func LoginHandler(c *gin.Context) {
 	}
 }
 
+type Userinfo struct {
+	NormalUserinfo models.NormalUser `form:"normal_userinfo" json:"normal_userinfo" xml:"normal_userinfo"`
+	IsFollowed     bool              `form:"is_followed" json:"is_followed" xml:"is_followed"`
+	FansCount      int64             `form:"fanscount" json:"fanscount" xml:"fanscount"`
+	FollowerCount  int64             `form:"followercount" json:"followercount" xml:"followercount"`
+}
+
 func GetUserInfoByUserIDHandler(c *gin.Context) {
 	// 得到中间件jwt认证的claims
 	claims := c.MustGet("claims").(*middleware.Myclaims)
+	//登录的用户id
+	me_id := claims.ID
+	// fmt.Print(me_id)
+	//当前查看的用户id
 	user_id := c.Query("user_id")
-	var normal_userinfo models.NormalUser
 
-	if claims != nil {
-		// if strconv.Itoa(int(claims.ID)) == user_id {
-		// 去数据库中查找用户的基本信息。
-		// fmt.Println("--------------------", user_id)
-		if err := dao.DB.Where("id = ?", user_id).Find(&normal_userinfo).Error; err != nil {
-			panic(err)
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"status":  0, //0表示成功
-			"message": "get userinfo ok",
-			"data":    normal_userinfo,
-		})
-		return
-		// }
-		// c.JSON(http.StatusOK, gin.H{
-		// 	"status":  -1,
-		// 	"message": "token not match",
-		// 	"data":    nil,
-		// })
+	// 需要判断user_id 是否被我me_id关注
+
+	var user_info Userinfo
+
+	// if claims != nil {
+	// if strconv.Itoa(int(claims.ID)) == user_id {
+	// 去数据库中查找用户的基本信息。
+	// fmt.Println("--------------------", user_id)
+	if err := dao.DB.Where("id = ?", user_id).Find(&user_info.NormalUserinfo).Error; err != nil {
+		panic(err)
 	}
+
+	//查找是否关注，关注数，粉丝数
+
+	//粉丝数
+	if err := dao.DB.Model(&models.Follow{}).Where("isfollowed_user_id = ? AND status = ?", user_id, 1).Count(&user_info.FansCount).Error; err != nil {
+		panic(err)
+	}
+	//关注数
+	if err := dao.DB.Model(&models.Follow{}).Where("followed_user_id = ? AND status = ?", user_id, 1).Count(&user_info.FollowerCount).Error; err != nil {
+		panic(err)
+	}
+	//查找是me_id是否是user_id的粉丝
+	var count int64
+	if err := dao.DB.Model(&models.Follow{}).Where("isfollowed_user_id = ? AND followed_user_id = ? AND status = ?", user_id, me_id, 1).Count(&count).Error; err != nil {
+		panic(err)
+	}
+	if count == 1 {
+		user_info.IsFollowed = true
+	} else {
+		user_info.IsFollowed = false
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"status":  -1,
-		"message": "token is null",
-		"data":    nil,
+		"status":  0, //0表示成功
+		"message": "get userinfo ok",
+		"data":    user_info,
 	})
+	// return
+	// }
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"status":  -1,
+	// 	"message": "token not match",
+	// 	"data":    nil,
+	// })
+	// }
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"status":  -1,
+	// 	"message": "token is null",
+	// 	"data":    nil,
+	// })
 }
 
 // 绑定修改的用户信息
@@ -196,5 +232,63 @@ func UpdateAvatar(c *gin.Context) {
 		"status":  0,
 		"message": "update avatar success",
 		"data":    file.Filename,
+	})
+}
+
+// 更改用户之间的关注关系
+
+type FollowUserID struct {
+	UserID uint `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
+}
+
+func ChangeFollowStatus(c *gin.Context) {
+	// 得到中间件jwt认证的claims
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	//登录的用户id
+	me_id := claims.ID
+
+	//被关注的用户id
+	var user FollowUserID
+	if err := c.ShouldBind(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    err.Error(),
+		})
+		return
+	}
+	user_id := user.UserID
+
+	fmt.Printf("%#v-----%#v-----\n", user_id, me_id)
+
+	//先查数据库，有没有此条记录，如果没有肯定是关注
+	var follow models.Follow
+	res := dao.DB.Where("isfollowed_user_id = ? AND followed_user_id = ?", user_id, me_id).Find(&follow)
+	if res.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    nil,
+		})
+		return
+	}
+	if res.RowsAffected != 0 { //如果存在，就把status改成相反的状态
+		status := 0
+		if *follow.Status == 0 {
+			status = 1
+		}
+		if err := dao.DB.Model(&follow).Update("status", status).Error; err != nil {
+			panic(err)
+		}
+	} else { //不存在就创建
+		follow_info := models.Follow{IsFollowedUserID: user_id, FollowedUserID: me_id}
+		if err := dao.DB.Create(&follow_info).Error; err != nil {
+			panic(err)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "change follow success",
+		"data":    nil,
 	})
 }

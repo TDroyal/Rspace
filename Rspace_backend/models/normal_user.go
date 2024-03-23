@@ -16,4 +16,10 @@ type NormalUser struct {
 	Comments []Comment `gorm:"foreignKey:UserID;references:ID"`
 	// 一个用户有多个收藏
 	Collections []Collection `gorm:"foreignkey:UserID;references:ID"`
+
+	//强行多对多
+	//一个用户有多个关注
+	Followeds []Follow `gorm:"foreignKey:IsFollowedUserID;references:ID;"`
+	//一个用户有多个粉丝
+	Followers []Follow `gorm:"foreignKey:FollowedUserID;references:ID;"`
 }

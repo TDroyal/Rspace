@@ -16,6 +16,8 @@ const ModuleUser = {
         introduction: "",
         age: "",
         gender: "",
+        fanscount:0,
+        followercount:0,
         is_login: false,
     },
     mutations: {     //更新state里面的数据
@@ -30,6 +32,8 @@ const ModuleUser = {
             state.introduction = user.introduction
             state.age = user.age
             state.gender = user.gender
+            state.fanscount = user.fanscount
+            state.followercount = user.followercount
             state.is_login = user.is_login;
         },
 
@@ -54,6 +58,8 @@ const ModuleUser = {
             state.introduction = ""
             state.age = ""
             state.gender = ""
+            state.fanscount = 0
+            state.followercount = 0
             state.is_login = false;
         },
     },
@@ -90,7 +96,7 @@ const ModuleUser = {
                                 refresh_jwt:refresh_jwt,
                             },
                             success(resp) {  //返回新的jwt
-                                console.log('9分钟刷新的一次token令牌：', resp);
+                                // console.log('9分钟刷新的一次token令牌：', resp);
                                 context.commit("updateJwt", resp.jwt);
                             },
                             error(resp) {
@@ -100,7 +106,7 @@ const ModuleUser = {
                     }, 1000 * 60 * 9);
 
                     $.ajax({
-                        url: BackendRootURL + "/myspace/getuserinfo/",
+                        url: BackendRootURL + "/myspace/getuserinfo/",  //就登录成功的时候获取一次
                         type: "GET",
                         data: {
                             user_id: jwt_obj.user_id,
@@ -123,16 +129,18 @@ const ModuleUser = {
                             // }
 
                             context.commit("updateUser", {  //传入mutations中的方法名称和参数data
-                                id: resp.data.id,
-                                username: resp.data.name,
-                                avatar: resp.data.avatar,
+                                id: resp.data.normal_userinfo.id,
+                                username: resp.data.normal_userinfo.name,
+                                avatar: resp.data.normal_userinfo.avatar,
                                 jwt: jwt,
                                 refresh_jwt: refresh_jwt,
-                                address: resp.data.address,
-                                introduction: resp.data.introduction,
-                                age: resp.data.age,
-                                gender: resp.data.gender,
+                                address: resp.data.normal_userinfo.address,
+                                introduction: resp.data.normal_userinfo.introduction,
+                                age: resp.data.normal_userinfo.age,
+                                gender: resp.data.normal_userinfo.gender,
                                 is_login: true,
+                                fanscount:resp.data.fanscount,
+                                followercount:resp.data.fanscount,
                             });
                             ElMessage({
                                 message: '登录成功',

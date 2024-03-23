@@ -1,8 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
-// 收藏关系表
+// 收藏关系表（多对多）
 // 一个用户有多个收藏   一个帖子也有多个收藏
 
 type Collection struct {

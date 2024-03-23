@@ -37,6 +37,9 @@ func SetupRouter() *gin.Engine {
 		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfoHandler)
 		userGroup.GET("/getuserposts/", middleware.JWTAuth(), controller.GetUserPostsHandler)
 		userGroup.POST("/updateavatar/", middleware.JWTAuth(), controller.UpdateAvatar)
+
+		//修改关注状态
+		userGroup.POST("/follow/", middleware.JWTAuth(), controller.ChangeFollowStatus)
 	}
 
 	// 首页帖子的获取

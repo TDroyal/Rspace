@@ -38,7 +38,7 @@ func CloseMySQL() {
 
 // 初始化模型
 func InitModel() {
-	err := DB.AutoMigrate(&models.User{}, &models.NormalUser{}, &models.Post{}, &models.Comment{}, &models.Collection{})
+	err := DB.AutoMigrate(&models.User{}, &models.NormalUser{}, &models.Post{}, &models.Comment{}, &models.Collection{}, &models.Follow{})
 	// 这里做插入操作,测试
 
 	// post := []models.Post{
