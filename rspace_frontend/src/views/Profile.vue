@@ -35,7 +35,7 @@ import UserProfileStar from '../components/UserProfileStar.vue';
 import UserProfileFansList from '../components/UserProfileFansList.vue';
 import UserProfileFollowList from '../components/UserProfileFollowList.vue';
 
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 export default {
     name: "Profile",
     components: {Content,UserProfileInfo,UserPostLists,UserProfileNavbar,UserProfileStar, UserProfileFansList, UserProfileFollowList},

@@ -41,7 +41,7 @@
 
 <script>
 import $ from 'jquery'
-import BackendRootURL from '../common_resources/resource';
+import {BackendRootURL, FrontendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录 
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
@@ -96,7 +96,7 @@ export default {
         const enterUserProfile = (user_id)=>{
             if(store.state.user.is_login) {
                 // context.emit('changeNavbar', '0')
-                window.open(`/profile/${user_id}`, '_blank');
+                window.open(FrontendRootURL + `/profile/${user_id}`, '_blank');
                 // router.push({
                 //     name:"Profile",
                 //     params:{

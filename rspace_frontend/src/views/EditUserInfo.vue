@@ -92,7 +92,7 @@ import Content from '../components/Content.vue'
 import {useStore} from 'vuex'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录
 export default {
     name:"EditUserInfo",

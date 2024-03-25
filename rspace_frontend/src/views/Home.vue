@@ -160,7 +160,7 @@ import FormatDateTime from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // import prefix from '../utils/ParseImageUrl'
 import router from '@/router/index';   //@定位src目录
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 export default {
     name:"Home",
     components: { Content },

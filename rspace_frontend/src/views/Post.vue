@@ -102,7 +102,7 @@ import { useStore} from 'vuex'
 import { ElMessage} from 'element-plus'
 import router from '@/router/index';   //@定位src目录
 // import $ from 'jquery'
-// import BackendRootURL from '../common_resources/resource'
+// import {BackendRootURL} from '../common_resources/resource';
 
 export default {
     name: "Post",

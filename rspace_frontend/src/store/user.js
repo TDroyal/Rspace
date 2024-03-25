@@ -2,7 +2,7 @@ import $ from 'jquery'
 
 import { jwtDecode } from 'jwt-decode'   //看官网才是最正确的选择
 import { ElMessage } from 'element-plus'
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 
 const ModuleUser = {
     state: {  //存全局数据

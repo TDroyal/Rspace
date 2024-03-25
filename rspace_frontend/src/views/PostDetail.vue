@@ -185,7 +185,7 @@
 import Content from '../components/Content.vue'
 import router from '@/router/index';   //@定位src目录 
 import $ from 'jquery'
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 import { ElMessage,  ElMessageBox } from 'element-plus';
 import { ref, reactive } from 'vue';
 import { useStore } from 'vuex';

@@ -1,5 +1,5 @@
 
-import BackendRootURL from '../common_resources/resource'
+import {BackendRootURL} from '../common_resources/resource';
 
 const prefix = BackendRootURL + "/static/posts/"
 

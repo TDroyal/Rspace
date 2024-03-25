@@ -84,7 +84,7 @@ import {useStore} from 'vuex'
 import router from '@/router/index';   //@定位src目录
 import { reactive } from 'vue';
 import $ from 'jquery'
-import BackendRootURL from '../common_resources/resource';
+import {BackendRootURL} from '../common_resources/resource';
 
 export default {
     name:"UserProfileInfo",
