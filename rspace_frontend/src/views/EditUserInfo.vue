@@ -1,5 +1,5 @@
 <template>
-    <Content>
+    <Content v-if="$store.state.user.is_login === true">
         <div class="card card-out">
             <div class="card-body">
                 <div class="row justify-content-center">
@@ -93,11 +93,26 @@ import {useStore} from 'vuex'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
 import BackendRootURL from '../common_resources/resource'
+import router from '@/router/index';   //@定位src目录
 export default {
     name:"EditUserInfo",
     components:{Content},
     setup(){
         const store = useStore()
+        const check_is_login = ()=>{
+            if(store.state.user.is_login === false) {
+                router.push({
+                    name:"Login",
+                })
+                return false
+            }
+            return true
+        }
+        if(check_is_login() === false) {
+            return
+        }
+
+        
 
         const userinfo = reactive({  //reactive不需要使用.value
             ...store.state.user

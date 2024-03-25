@@ -47,7 +47,9 @@
                     <ul class="dropdown-menu">
                         <li><router-link class="dropdown-item" :to="{name:'Profile', params:{userid:$store.state.user.id}}">个人中心</router-link></li>
                         <!-- <li><div class="dropdown-item" @click="enterProfile($store.state.user.id)">个人中心</div></li> -->
-                        <li><router-link class="dropdown-item" :to="{name:'Star'}">我的收藏</router-link></li>
+
+                        <!-- <li><router-link class="dropdown-item" :to="{name:'Star'}">我的收藏</router-link></li> -->
+                        
                         <li><hr class="dropdown-divider"></li>
                         <li><router-link class="dropdown-item" :to="{name:'Login'}" @click="logout">退出</router-link></li>
                     </ul>

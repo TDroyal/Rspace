@@ -1,7 +1,7 @@
 <template>
     <!-- 非图片文件也能上传问题的bug还已解决，但是不能从列表中自动删除 -->
-    <Content>
-        <div class="row justify-content-center">
+    <Content v-if="$store.state.user.is_login === true">
+        <div class="row justify-content-center" >
             <div class="col-md-9 col-12">
                 <div class="card card-single">
                     <div class="card-body">
@@ -100,7 +100,7 @@ import Content from '../components/Content.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
 import { ElMessage} from 'element-plus'
-// import router from '@/router/index';   //@定位src目录
+import router from '@/router/index';   //@定位src目录
 // import $ from 'jquery'
 // import BackendRootURL from '../common_resources/resource'
 
@@ -109,9 +109,23 @@ export default {
     components:{Content},
 
     setup() {
+        const store = useStore()
+        const check_is_login = ()=>{
+            if(store.state.user.is_login === false) {
+                router.push({
+                    name:"Login",
+                })
+                return false
+            }
+            return true
+        }
+        if(check_is_login() === false) {
+            return
+        }
+
         const uploadRef = ref(null);
         const fileList = ref([]);
-        const store = useStore()
+        
         const headers = reactive({
             'Authorization': 'Bearer ' + store.state.user.jwt
         })

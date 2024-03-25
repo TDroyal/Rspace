@@ -1,15 +1,15 @@
 <template>
-    <Content>
-        <div class="row">
+    <Content v-if="$store.state.user.is_login === true">
+        <div class="row" >
             <div class="col-md-3 col-12" style="background-color: #F7F8FA;">
                 <!-- 头像 写成一个子组件 -->
-                <UserProfileInfo @follow="follow" @unfollow="unfollow" @changeNavbar="changeNavbar" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
+                <UserProfileInfo  @follow="follow" @unfollow="unfollow" @changeNavbar="changeNavbar" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
             </div>
 
             <div class="col-md-9 col-12" >
                 <!-- 写一个导航栏 -->
-                <UserProfileNavbar :is_me="is_me" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
-                <UserPostLists :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
+                <UserProfileNavbar  :is_me="is_me" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
+                <UserPostLists  :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
                 <UserProfileStar :is_me="is_me"  v-if="navSelected === '1'"></UserProfileStar>
                 <UserProfileFollowList  v-if="navSelected === '2'"></UserProfileFollowList>
                 <UserProfileFansList v-if="navSelected === '3'"></UserProfileFansList>
@@ -41,6 +41,19 @@ export default {
     components: {Content,UserProfileInfo,UserPostLists,UserProfileNavbar,UserProfileStar, UserProfileFansList, UserProfileFollowList},
     setup() {
         const store = useStore()
+
+        const check_is_login = ()=>{
+            if(store.state.user.is_login === false) {
+                router.push({
+                    name:"Login",
+                })
+                return false
+            }
+            return true
+        }
+        if(check_is_login() === false) {
+            return
+        }
         const route = useRoute();
         let user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
         // console.log(user_id)
@@ -56,7 +69,6 @@ export default {
             count:0,
             posts:[],
         })
-        
         //先获取用户个人基本信息
         const getUserInfo = async () => {
             // if (is_me.value === false) {
@@ -149,6 +161,7 @@ export default {
         // 你可以使用watch()函数来监听路由参数的变化，并在参数变化时重新获取用户信息。
         // loadData();
         // console.log(router.currentRoute.value.params)  // 捕捉userid这个params
+
         watch(() => router.currentRoute.value.params, () => {
             loadData();
         }, { immediate: true }); // immediate: true 表示在组件初始化时立即执行
