@@ -35,16 +35,31 @@ const ModuleUser = {
             state.fanscount = user.fanscount
             state.followercount = user.followercount
             state.is_login = user.is_login;
+            let uu = {
+                user:state
+            }
+            localStorage.setItem("userStore", JSON.stringify(uu))
+            // console.log("updateUser", uu)
         },
 
         updateJwt(state, jwt) {
             state.jwt = jwt;
+            let uu = {
+                user:state
+            }
+            localStorage.setItem("userStore", JSON.stringify(uu))
+            // console.log("updateJwt", uu)
         },
 
         //单独更新头像
         updateAvatar(state, avatar)
         {
             state.avatar = BackendRootURL + "/static/avatar/" + avatar
+            let uu = {
+                user:state
+            }
+            localStorage.setItem("userStore", JSON.stringify(uu))
+            // console.log("updateAvatar", uu)
         },
 
         logout(state) {
@@ -61,6 +76,8 @@ const ModuleUser = {
             state.fanscount = 0
             state.followercount = 0
             state.is_login = false;
+
+            window.localStorage.removeItem("userStore")
         },
     },
     actions: {      //对state的各种操作
@@ -75,7 +92,7 @@ const ModuleUser = {
                     password: data.password,
                 },
                 success(resp) {   //应该返回一个jwt和一个刷新令牌
-                    console.log(resp);
+                    // console.log(resp);
                     if(resp.status != 0) {
                         data.error();
                         return 
@@ -118,7 +135,7 @@ const ModuleUser = {
                             if (resp.status != 0) {
                                 return 
                             }
-                            console.log(resp)
+                            // console.log(resp)
 
                             // let gender = ""
                             // if (resp.data.gender === 1) {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"time"
 
 	// "strconv"
 
@@ -291,4 +292,115 @@ func ChangeFollowStatus(c *gin.Context) {
 		"message": "change follow success",
 		"data":    nil,
 	})
+}
+
+type SearchInfo struct {
+	UserID     uint `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
+	SearchType int  `form:"search_type" json:"search_type" xml:"search_type" binding:"required"`
+}
+
+type SearchResult struct {
+	ID     uint   `form:"id" json:"id" xml:"id"`
+	Name   string `form:"name" json:"name" xml:"name"`
+	Avatar string `form:"avatar" json:"avatar" xml:"avatar"`
+	Gender int    `form:"gender" json:"gender" xml:"gender"`
+}
+
+func GetFollowersInfo(c *gin.Context) {
+	// 1表示查询关注，2表示查询粉丝
+	var searchInfo SearchInfo
+	if err := c.ShouldBind(&searchInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "error",
+			"data":    err.Error(),
+		})
+		return
+	}
+	var userInfo []SearchResult
+	if searchInfo.SearchType == 1 { //查询user_id关注的用户信息
+		if err := dao.DB.Model(&models.Follow{}).
+			Where("followed_user_id = ? AND status = ?", searchInfo.UserID, 1).
+			Order("updated_at DESC").
+			Select("normal_users.id, normal_users.name, normal_users.avatar, normal_users.gender").
+			Joins("left join normal_users on normal_users.id = follows.isfollowed_user_id").
+			Scan(&userInfo).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  -1,
+				"message": "get follow error",
+				"data":    err,
+			})
+			return
+		}
+		// fmt.Printf("%#v-------\n", userInfo)
+		c.JSON(http.StatusOK, gin.H{
+			"status":  0,
+			"message": "get follow success",
+			"data":    userInfo,
+		})
+		return
+	} else if searchInfo.SearchType == 2 {
+		if err := dao.DB.Model(&models.Follow{}).
+			Where("isfollowed_user_id = ? AND status = ?", searchInfo.UserID, 1).
+			Order("updated_at DESC").
+			Select("normal_users.id, normal_users.name, normal_users.avatar, normal_users.gender").
+			Joins("left join normal_users on normal_users.id = follows.followed_user_id").
+			Scan(&userInfo).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  -1,
+				"message": "get fans error",
+				"data":    err,
+			})
+			return
+		}
+		// fmt.Printf("%#v-------\n", userInfo)
+		c.JSON(http.StatusOK, gin.H{
+			"status":  0,
+			"message": "get fans success",
+			"data":    userInfo,
+		})
+		return
+	}
+
+}
+
+type StarPostInfo struct { //gorm匹配Scan从数据库查出来的字段
+	PostID    uint      `form:"post_id" json:"post_id" xml:"post_id" gorm:"column:id"`
+	PostType  int       `form:"post_type" json:"post_type" xml:"post_type" gorm:"column:type"`
+	Content   string    `form:"content" json:"content" xml:"content" gorm:"column:content"`
+	CreatedAt time.Time `form:"push_time" json:"push_time" xml:"push_time" gorm:"column:created_at"`
+	UserID    uint      `form:"user_id" json:"user_id" xml:"user_id" gorm:"column:user_id"`
+	Name      string    `form:"name" json:"name" xml:"name" gorm:"column:name"`
+	Avatar    string    `form:"avatar" json:"avatar" xml:"avatar" gorm:"column:avatar"`
+}
+
+// 获取用户user_id收藏的帖子，包含用户头像，id，name, 帖子id, 帖子content，类型，帖子发布日期createAt,
+func GetStarPostINfo(c *gin.Context) {
+	user_id := c.Query("user_id")
+	// fmt.Printf("------------------%#v\n", user_id)
+	// 三表联查
+	var starpost_info []StarPostInfo
+
+	if err := dao.DB.Model(&models.Collection{}).
+		Where("collections.user_id = ? AND collections.status = ?", user_id, 1).
+		Order("collections.updated_at DESC").
+		Select("posts.id, posts.type, posts.content, posts.created_at, posts.user_id, normal_users.name, normal_users.avatar").
+		Joins("join posts on posts.id = collections.post_id AND posts.deleted_at is NULL").
+		Joins("join normal_users on normal_users.id = posts.user_id").
+		Scan(&starpost_info).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "get starpostlist error",
+			"data":    err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "get starpostlist success",
+		"data":    starpost_info,
+	})
+
+	// fmt.Printf("%#v-------\n", starpost_info)
 }

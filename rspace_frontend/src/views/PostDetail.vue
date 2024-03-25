@@ -482,7 +482,7 @@ export default {
             //先是弹出一个提醒框，是否删除。
             ElMessageBox.confirm(
                 '确认是否删除该帖子？',
-                'Warning',
+                '警告',
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',

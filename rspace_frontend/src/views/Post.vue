@@ -70,6 +70,7 @@
                                     :on-error="handleError"
                                     :on-exceed="handleExceed"
                                     :on-change="checkImage"
+                                    :on-remove="handleRemove"
                                     :file-list="fileList"
                                     :auto-upload="false">
                                     <el-button size="large" type="primary" style="width: 100%;">选取图片</el-button>
@@ -99,9 +100,9 @@ import Content from '../components/Content.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
 import { ElMessage} from 'element-plus'
-import router from '@/router/index';   //@定位src目录
-import $ from 'jquery'
-import BackendRootURL from '../common_resources/resource'
+// import router from '@/router/index';   //@定位src目录
+// import $ from 'jquery'
+// import BackendRootURL from '../common_resources/resource'
 
 export default {
     name: "Post",
@@ -168,57 +169,63 @@ export default {
             //     content:null,
             //     type:null,
             // }
-            const formData = new FormData();
-            // console.log(fileList.value)
-            fileList.value.forEach((file) => {
-                // post.images.push(file.raw)
-                formData.append('images', file.raw);
-            });
-            formData.append('content', contents.value)
-            formData.append('type', content_type.value)
-            // console.log(formData.getAll('images'), )
-            // post.content = contents.value
-            // post.type = parseInt(content_type.value)
-            // console.log(post)
+            console.log("----------------", fileList.value)
+            return 
+            // const formData = new FormData();
+            // // console.log(fileList.value)
+            // fileList.value.forEach((file) => {
+            //     // post.images.push(file.raw)
+            //     formData.append('images', file.raw);
+            // });
+            // formData.append('content', contents.value)
+            // formData.append('type', content_type.value)
+            // // console.log(formData.getAll('images'), )
+            // // post.content = contents.value
+            // // post.type = parseInt(content_type.value)
+            // // console.log(post)
 
-            // 要将多张照片数据传递到后端，你可以使用 FormData 对象来构建请求，并将每张照片添加到 FormData 对象中的 images 字段。
-            // 在下述代码中，我们首先创建了一个新的 FormData 对象。然后，使用 forEach 循环遍历 fileList 数组，将每个文件的 raw 数据添加到 FormData 对象的 images 字段中。
-            // 接下来，我们可以通过 formData.append 方法将其他字段（如 content 和 type）添加到 FormData 对象中。
-            // 最后，我们使用 $.ajax 发送请求到后端。请注意，我们设置了 processData 和 contentType 选项为 false，以确保 FormData 对象以正确的方式发送。
+            // // 要将多张照片数据传递到后端，你可以使用 FormData 对象来构建请求，并将每张照片添加到 FormData 对象中的 images 字段。
+            // // 在下述代码中，我们首先创建了一个新的 FormData 对象。然后，使用 forEach 循环遍历 fileList 数组，将每个文件的 raw 数据添加到 FormData 对象的 images 字段中。
+            // // 接下来，我们可以通过 formData.append 方法将其他字段（如 content 和 type）添加到 FormData 对象中。
+            // // 最后，我们使用 $.ajax 发送请求到后端。请注意，我们设置了 processData 和 contentType 选项为 false，以确保 FormData 对象以正确的方式发送。
 
-            $.ajax({
-                url: BackendRootURL + "/post/uploadimage/",
-                type:"POST",
-                data:formData,
-                processData: false,
-                contentType: false,
-                headers:{
-                    'Authorization': 'Bearer ' + store.state.user.jwt
-                },
-                success(resp) {
-                    // console.log(resp)
-                    if(resp.status != 0) {
-                        ElMessage.error("分享失败")
-                        return
-                    }
-                    ElMessage.success("分享成功!!!")
-                    //跳到首页去
-                    router.push({
-                        name:"Home",
-                    })
-                },
-                error(resp) {
-                    console.log(resp)
-                }
-            })
+            // $.ajax({
+            //     url: BackendRootURL + "/post/uploadimage/",
+            //     type:"POST",
+            //     data:formData,
+            //     processData: false,
+            //     contentType: false,
+            //     headers:{
+            //         'Authorization': 'Bearer ' + store.state.user.jwt
+            //     },
+            //     success(resp) {
+            //         // console.log(resp)
+            //         if(resp.status != 0) {
+            //             ElMessage.error("分享失败")
+            //             return
+            //         }
+            //         ElMessage.success("分享成功!!!")
+            //         //跳到首页去
+            //         router.push({
+            //             name:"Home",
+            //         })
+            //     },
+            //     error(resp) {
+            //         console.log(resp)
+            //     }
+            // })
 
             // console.log(fileList.value)
 
         };
 
-        const handleRemove = (file, fileList) => {
-            console.log(file, fileList);
-        };
+        // const handleRemove = (file, fileList) => {
+        //     console.log(file, fileList);
+        // };
+        const handleRemove = (file) => {
+            console.log(file) // 根据图片名称找到第一个同名的
+
+        }
 
         const handlePreview = (file) => {
             console.log(file);

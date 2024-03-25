@@ -3,18 +3,23 @@
         <div class="row">
             <div class="col-md-3 col-12" style="background-color: #F7F8FA;">
                 <!-- 头像 写成一个子组件 -->
-                <UserProfileInfo @follow="follow" @unfollow="unfollow" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
+                <UserProfileInfo @follow="follow" @unfollow="unfollow" @changeNavbar="changeNavbar" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
             </div>
 
-            <div class="col-md-9 col-12">
-                <UserPostLists :posts="posts" :userinfo="user" :is_me="is_me"></UserPostLists>
+            <div class="col-md-9 col-12" >
+                <!-- 写一个导航栏 -->
+                <UserProfileNavbar :is_me="is_me" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
+                <UserPostLists :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
+                <UserProfileStar :is_me="is_me"  v-if="navSelected === '1'"></UserProfileStar>
+                <UserProfileFollowList  v-if="navSelected === '2'"></UserProfileFollowList>
+                <UserProfileFansList v-if="navSelected === '3'"></UserProfileFansList>
             </div>
         </div>
     </Content>
 </template>
 
 <script>
-import { ref, reactive, watch } from 'vue' //computed
+import { ref, reactive, watch, } from 'vue' //computed
 import { useStore } from 'vuex'
 import { useRoute } from 'vue-router';
 import router from '@/router/index';   //@定位src目录
@@ -25,11 +30,15 @@ import $ from 'jquery'
 import { ElMessage } from 'element-plus'
 import FormatDateTime from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
+import UserProfileNavbar from '../components/UserProfileNavbar.vue'
+import UserProfileStar from '../components/UserProfileStar.vue';
+import UserProfileFansList from '../components/UserProfileFansList.vue';
+import UserProfileFollowList from '../components/UserProfileFollowList.vue';
 
 import BackendRootURL from '../common_resources/resource'
 export default {
     name: "Profile",
-    components: {Content,UserProfileInfo,UserPostLists,},
+    components: {Content,UserProfileInfo,UserPostLists,UserProfileNavbar,UserProfileStar, UserProfileFansList, UserProfileFollowList},
     setup() {
         const store = useStore()
         const route = useRoute();
@@ -160,7 +169,10 @@ export default {
             user.is_followed = false;
             user.fanscount -- ;
         };
-
+        const navSelected = ref('0')
+        const changeNavbar = (navSelect)=>{  //子组件往父组件传值
+            navSelected.value = navSelect
+        }
 
         return {
             // store,
@@ -169,8 +181,10 @@ export default {
             is_me,
             // userinfo,
             posts,
+            navSelected,
             follow,
             unfollow,
+            changeNavbar,
         }
     }
 }

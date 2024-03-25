@@ -17,9 +17,21 @@
                             <div class="mb-3">
                                 <!-- <label for="password" class="form-label">密码</label> -->
                                 <input v-model="password" type="password" class="form-control" id="password" placeholder="密码" autocomplete="current-password" required>
-                                <div class="error-message">{{ error_message }}</div>
                             </div>
                             
+                            <div class="mb-3">
+                                <!-- <label for="password" class="form-label">密码</label> -->
+                                <div class="row" style="display: flex; justify-content: center;">
+                                    <div class="col-6">
+                                        <input v-model="codestr" type="text" class="form-control" id="codestr" placeholder="验证码" autocomplete="codestr" maxlength="4" required>
+                                    </div>
+                                    <div class="col-5 randcode">
+                                        <div @click="refreshRandomCode" class="randcodestr">{{randcodestr}}</div>
+                                    </div>
+                                    <div class="error-message">{{ error_message }}</div>
+                                </div>
+                            </div>
+
                             <!-- d-flex 类将创建一个弹性容器，而 justify-content-center 类将使其内容在水平方向上居中对齐。 -->
                             <div class="d-flex justify-content-center">
                                 <button type="submit" class="btn btn-primary position-relative">登录</button>
@@ -37,6 +49,7 @@
 import { useStore } from 'vuex';
 import Content from '../components/Content.vue'
 import {ref} from 'vue'
+// import { ElMessage } from 'element-plus';
 import router from '@/router/index';   //@定位src目录
 export default {
     name: "Login",
@@ -47,8 +60,35 @@ export default {
         let username = ref('')
         let password = ref('')
         let error_message = ref('')
+        const codestr = ref('')
+        const randcodestr = ref('')
+
+        const generateRandomCode = ()=>{
+            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+            let n = characters.length
+            let code = ''
+            for (var i = 0; i < 4; i++) {
+                var randomIndex = Math.floor(Math.random() * n);
+                code += characters.charAt(randomIndex);
+            }
+            
+            return code;
+        }
+        randcodestr.value = generateRandomCode()
+        const refreshRandomCode = ()=>{
+            randcodestr.value = generateRandomCode()
+        }
+
 
         const login = ()=>{
+            //随机生成的验证码为数组形式，此处将其转为字符串并去掉中间相隔的逗号
+            if(codestr.value !== randcodestr.value) {
+                error_message.value = "请输入正确的验证码"
+                // ElMessage.error("请输入正确的验证码")
+                refreshRandomCode()
+                return
+            }
+
             error_message.value = ""
             store.dispatch("login", {
                 username: username.value,
@@ -71,7 +111,11 @@ export default {
             username,
             password,
             error_message,
+            randcodestr,
+            codestr,
             login,
+            generateRandomCode,
+            refreshRandomCode,
         }
     }
 
@@ -107,6 +151,23 @@ input {
     width: 80%;
     margin: auto;
     margin-top: 5px;
+}
+
+.randcodestr{
+    background: lightgray;
+}
+
+.randcodestr:hover {
+    cursor: pointer;
+}
+
+.randcode {
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: bold;
+    font-size: 25px;
+    user-select: none;
 }
 
 </style>

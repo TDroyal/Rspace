@@ -21,11 +21,11 @@
                         </div>
                     </div>
                     <div class="row justify-content-center" style="margin-top: 10px;">
-                        <div class="col-5 follow-list">
+                        <div class="col-5 follow-list" @click="openfollowList('2')">
                             <div class="text-center follow-title">关注了</div>
                             <div class="text-center">{{userinfo.followercount}}</div>
                         </div><span style="width: 10px; padding: 0px; color: gray; text-align: center;">|</span>
-                        <div class="col-5 fans-list">
+                        <div class="col-5 fans-list" @click="openfollowList('3')">
                             <div class="text-center follow-title">关注者</div>
                             <div class="text-center">{{userinfo.fanscount}}</div>
                         </div>
@@ -127,7 +127,7 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if (resp.status === 0) {
-                        context.emit('follow');  //调用父组件传过来的函数
+                        context.emit('follow');  //调用父组件传过来的函数, 子组件向父组件传递数据可以通过自定义事件来实现，调用函数传参数
                     }
                 }
             });
@@ -151,6 +151,9 @@ export default {
             });
         }
 
+        const openfollowList =(navCount)=>{
+            context.emit('changeNavbar', navCount)
+        }
 
         return {
             store,
@@ -158,6 +161,7 @@ export default {
             editPersionalInfomation,
             follow,
             unfollow,
+            openfollowList,
         }
     }
 }

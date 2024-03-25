@@ -40,6 +40,10 @@ func SetupRouter() *gin.Engine {
 
 		//修改关注状态
 		userGroup.POST("/follow/", middleware.JWTAuth(), controller.ChangeFollowStatus)
+		//查看用户的关注和粉丝
+		userGroup.GET("/getfollowersinfo/", middleware.JWTAuth(), controller.GetFollowersInfo)
+		//得到用户的收藏列表
+		userGroup.GET("/getstarpostinfo/", middleware.JWTAuth(), controller.GetStarPostINfo)
 	}
 
 	// 首页帖子的获取
