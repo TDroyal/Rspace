@@ -12,7 +12,7 @@
                 <UserPostLists  :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
                 <UserProfileStar :is_me="is_me"  v-if="navSelected === '1'"></UserProfileStar>
                 <UserProfileFollowList  v-if="navSelected === '2'"></UserProfileFollowList>
-                <UserProfileFansList v-if="navSelected === '3'"></UserProfileFansList>
+                <UserProfileFansList :is_followed="user.is_followed" v-if="navSelected === '3'"></UserProfileFansList>
             </div>
         </div>
     </Content>
