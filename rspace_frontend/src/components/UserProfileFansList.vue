@@ -11,7 +11,7 @@
                     </div>
                     <br/>
                     <div v-for="user in fansList.users" :key="user.id">
-                        <!-- <div class="card  user-list" @click="enterUserProfile(user.id)">
+                        <div class="card  user-list" @click="enterUserProfile(user.id)">
                             <div class="card-body" style="padding: 8px">
                                 <div class="row">
                                     <div class="col-md-1 col-3">
@@ -30,8 +30,8 @@
                                     </div>
                                 </div>
                             </div>
-                        </div> -->
-                        <a :href="'/profile/' + user.id" target="_black">
+                        </div>
+                        <!-- <a :href="'/profile/' + user.id + '/'" target="_black">
                             <div class="card  user-list">
                                 <div class="card-body" style="padding: 8px">
                                     <div class="row">
@@ -52,7 +52,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </a>
+                        </a> -->
                         <div class="horizontal-line"></div>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ export default {
         const enterUserProfile = (user_id)=>{
             if(store.state.user.is_login) {
                 // context.emit('changeNavbar', '0')
-                window.open(FrontendRootURL + `/profile/${user_id}`, '_blank');
+                window.open(FrontendRootURL + `/profile/${user_id}/`, '_blank');
                 // router.push({
                 //     name:"Profile",
                 //     params:{

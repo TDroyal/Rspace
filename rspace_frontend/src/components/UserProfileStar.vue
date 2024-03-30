@@ -54,7 +54,7 @@
                                     <div class="col-md-1 col-1 post_type center-position">
                                         {{post_type_map[post.post_type]}}
                                     </div>
-                                    <!-- <div class="col-md-4 col-3 content center-position" @click="enterPostDetail(post.post_id)">
+                                    <div class="col-md-4 col-3 content center-position" @click="enterPostDetail(post.post_id)">
                                         {{post.content}}
                                     </div>
                                     <div class="col-md-1 col-2 center-position" >
@@ -62,11 +62,10 @@
                                     </div>
                                     <div class="col-md-2 col-1 username center-position" @click="enterUserProfile(post.user_id)">
                                         {{post.name}}
-                                    </div> -->
-                                    <a class="col-md-4 col-3 content   center-position" :href="'/post/' + post.post_id" target="_black">
-                                        <!-- <div class=""> -->
+                                    </div>
+                                    <!-- <a class="col-md-4 col-3 content   center-position" :href="'/post/' + post.post_id + '/'" target="_black">
+                                       
                                             {{post.content}}
-                                        <!-- </div> -->
                                     </a>
                                     
                                     <div class="col-md-1 col-2 center-position" >
@@ -75,11 +74,10 @@
                                         </a>
                                     </div>
 
-                                    <a class="col-md-2 col-1 username center-position" :href="'/profile/' + post.user_id" target="_black">
-                                        <!-- <div class=" username "> -->
+                                    <a class="col-md-2 col-1 username center-position" :href="'/profile/' + post.user_id + '/'" target="_black">
+                                        
                                             {{post.name}}
-                                        <!-- </div> -->
-                                    </a>
+                                    </a> -->
                                     <div class="col-md-3 col-3 push_time center-position" v-if="is_me === true">
                                         {{post.push_time}}
                                     </div>
@@ -174,7 +172,7 @@ export default {
                 //         userid:user_id,
                 //     }
                 // })
-                window.open(FrontendRootURL + `/profile/${user_id}`, '_blank');  //新窗口打开
+                window.open(FrontendRootURL + `/profile/${user_id}/`, '_blank');  //新窗口打开
             }else {
                 router.push({
                     name:"Login",
@@ -191,7 +189,7 @@ export default {
             //         postid:post_id
             //     },
             // })
-            window.open(`/post/${post_id}`, '_blank');  //新窗口打开
+            window.open(`/post/${post_id}/`, '_blank');  //新窗口打开
         }
 
         // 取消收藏，先从starposts_info列表数组中删除根据post_id，然后再后端改status值=0

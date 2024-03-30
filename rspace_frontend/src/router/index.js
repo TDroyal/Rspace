@@ -45,7 +45,7 @@ const routes = [
     component:EditUserInfo,
   },
   {
-    path:'/post/:postid',
+    path:'/post/:postid/',
     name:"PostDetail",
     component:PostDetail,
   },
