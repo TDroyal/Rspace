@@ -1,7 +1,7 @@
 <template>
-    <div class="card card-out">
-        <div class="card-body" style="background-color: #F7F8FA;">
-            <div class="card">
+    <div class="card card-out" style="background-color:transparent; z-index: 3; ">
+        <div class="card-body" >
+            <div class="card" >
                 <div class="card-body">
                     <div class="row justify-content-center">
                         <div class="col-12">
@@ -211,9 +211,9 @@ export default {
 
 <style scoped>
 
-.card{
+/* .card{
     box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray;
-}
+} */
 
 .card-out {
     box-shadow: none;

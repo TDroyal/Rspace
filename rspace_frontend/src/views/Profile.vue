@@ -1,12 +1,12 @@
 <template>
     <Content v-if="$store.state.user.is_login === true">
         <div class="row" >
-            <div class="col-md-3 col-12" style="background-color: #F7F8FA;">
+            <div class="col-md-3 col-12 mycol-left">
                 <!-- 头像 写成一个子组件 -->
                 <UserProfileInfo  @follow="follow" @unfollow="unfollow" @changeNavbar="changeNavbar" v-bind:userinfo="user" :is_me="is_me"></UserProfileInfo>
             </div>
 
-            <div class="col-md-9 col-12" >
+            <div class="col-md-9 col-12 mycol-right" >
                 <!-- 写一个导航栏 -->
                 <UserProfileNavbar  :is_me="is_me" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
                 <UserPostLists  :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
@@ -206,5 +206,16 @@ export default {
 
 
 <style scoped>
+.mycol-left{
+    /* style="background-color: #F7F8FA; " */
+    /* background-color: transparent; */
+    /* position: relative; */
+    z-index: 4;
+}
 
+.mycol-right {
+    /* background-color: transparent; */
+    /* position: relative; */
+    z-index: 4;
+}
 </style>

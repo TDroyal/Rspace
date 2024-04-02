@@ -146,9 +146,9 @@ export default {
 
 
 <style scoped>
-.card{
+/* .card{
     box-shadow: 3px 3px 3px lightgray,  -3px 0 3px lightgray;
-}
+} */
 
 img {
     width: 20%;

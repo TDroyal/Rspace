@@ -111,6 +111,7 @@ a{
 
 .mynav{
     background-color: white;
+    /* background-color: #F7F7F7; */
     position: fixed;
     top: 0;
     width: 100vw;

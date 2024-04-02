@@ -296,7 +296,7 @@ export default {
 .card-out {
     margin-top: 20px;
     /* box-shadow: none; */
-    box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray;
+    /* box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray; */
     border: none;
 }
 

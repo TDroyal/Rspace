@@ -1,6 +1,6 @@
 <template>
     <Content>
-        <div class="row justify-content-center">
+        <div class="row justify-content-center" style="z-index: 3000000;">
             <div class="col-md-9 col-12">
                 <div v-for="(post, index) in posts.posts" :key="post.ID" >
                     <div class="card card-single">
@@ -570,7 +570,7 @@ svg {
 .card-single {
     margin-top: 20px;
     /* box-shadow: none; */
-    box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray;
+    /* box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray; */
     border: none;
     
 }
