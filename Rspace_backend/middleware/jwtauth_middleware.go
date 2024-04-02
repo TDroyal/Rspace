@@ -3,7 +3,6 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -14,8 +13,9 @@ import (
 
 // 绑定 JSON  登录请求信息
 type LoginInfo struct {
-	UserName string `form:"username" json:"username" xml:"username"  binding:"required"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required"`
+	UserName    string `form:"username" json:"username" xml:"username"  binding:"required"`
+	Password    string `form:"password" json:"password" xml:"password" binding:"required"`
+	LoginMethod string `form:"login_method" json:"login_method" xml:"login_method"`
 }
 
 // 定义荷载payload
@@ -116,7 +116,7 @@ func GenerateToken(c *gin.Context, logininfo LoginInfo, user_id uint) { //用户
 		})
 	}
 
-	log.Println(token)
+	// log.Println(token)
 	// 返回用户相关数据，
 	data := LoginResult{
 		// UserName:      logininfo.UserName,
@@ -274,7 +274,7 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println("token = ", token)
+		// fmt.Println("token = ", token)
 
 		//解析出实际的载荷
 		j := NewJWT() //得到私钥

@@ -12,6 +12,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	//连接redis
+	dao.InitRedis()
 
 	//持续退出时mysql数据库
 	defer dao.CloseMySQL()

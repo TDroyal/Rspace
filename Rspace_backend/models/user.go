@@ -11,8 +11,9 @@ type User struct {
 	ID       uint   `gorm:"column:id"`
 	UserName string `gorm:"column:username;type:varchar(50);not null;unique;" form:"username" json:"username" xml:"username" binding:"required"`
 	Password string `gorm:"column:password;type:varchar(50);not null;" form:"password" json:"password" xml:"password" binding:"required"` //存入数据库前加密
-	UserType int    `gorm:"column:usertype;type:tinyint(10);default:1"`                                                                   // 用户类型  默认是1，默认是普通用户  0是管理员
-	Status   int    `gorm:"column:status;type:tinyint(10);default:1"`                                                                     // 账号状态  默认是1,激活状态
+	Email    string `gorm:"column:email;type:varchar(70);not null;" form:"email" json:"email" xml:"email" binding:"required"`
+	UserType int    `gorm:"column:usertype;type:tinyint(10);default:1"` // 用户类型  默认是1，默认是普通用户  0是管理员
+	Status   int    `gorm:"column:status;type:tinyint(10);default:1"`   // 账号状态  默认是1,激活状态
 }
 
 //创建表  自动迁移（把结构体和数据库表进行对应，就是帮你自动创建，修改数据库表（根据你对结构体的改变））

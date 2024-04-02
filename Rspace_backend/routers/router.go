@@ -24,10 +24,12 @@ func SetupRouter() *gin.Engine {
 	r.Use(cors.New(config))                                            //注册全局中间件
 
 	//登录的路由
-	loginGroup := r.Group("/api/token")
+	loginGroup := r.Group("/api")
 	{
-		loginGroup.POST("/", controller.LoginHandler)         //获得登录令牌
-		loginGroup.POST("/refresh/", middleware.RefreshJWT()) // 刷新登录令牌
+		loginGroup.POST("/token/", controller.LoginHandler)          //获得登录令牌
+		loginGroup.POST("/token/refresh/", middleware.RefreshJWT())  // 刷新登录令牌
+		loginGroup.POST("/sendemailcode/", controller.SendEmailCode) //给邮箱发送验证码
+		loginGroup.POST("/register/", controller.Register)
 	}
 
 	// 用户个人信息路由  更新个人信息

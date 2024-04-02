@@ -84,17 +84,27 @@ const ModuleUser = {
         //context里面传一些api，data传信息
         login: (context, data) => {
             // console.log(context)
+            let username = ''
+            let password = ''
+            if(data.login_method === 'login_with_email') {
+                username = data.email
+                password = data.email_code
+            }else if(data.login_method === 'login_with_username'){
+                username = data.username
+                password = data.password
+            }
             $.ajax({
                 url: BackendRootURL + "/api/token/",
                 type: "POST",
                 data: {
-                    username: data.username,
-                    password: data.password,
+                    username: username,
+                    password: password,
+                    login_method: data.login_method,
                 },
                 success(resp) {   //应该返回一个jwt和一个刷新令牌
                     // console.log(resp);
                     if(resp.status != 0) {
-                        data.error();
+                        data.error(resp);
                         return 
                     }
                     // 获取token 和 refresh_token
@@ -182,7 +192,11 @@ const ModuleUser = {
                 }
             });
         },
+        
     },
+
+    
+
     modules: {
         
     }

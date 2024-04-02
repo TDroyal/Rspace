@@ -2,6 +2,7 @@ package controller
 
 import (
 	"Rspace_backend/dao"
+	"Rspace_backend/logic"
 	"Rspace_backend/middleware"
 	"Rspace_backend/models"
 	"fmt"
@@ -26,24 +27,59 @@ func LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Printf("-------%#v\n", logininfo)
+	// fmt.Printf("-------%#v\n", logininfo)
 	// 去数据库里面查看是否存在此用户，并且该用户状态正常
 	var user models.User
-	cnt := dao.DB.Where("username = ? and password = ? and status = ?", logininfo.UserName, logininfo.Password, 1).Find(&user).RowsAffected
+	var cnt int64
+	if logininfo.LoginMethod == "login_with_username" {
+		cnt = dao.DB.Where("username = ? and password = ? and status = ?", logininfo.UserName, logic.GetMd5(logininfo.Password), 1).Find(&user).RowsAffected
+	} else if logininfo.LoginMethod == "login_with_email" {
+		cnt = dao.DB.Where("email = ?", logininfo.UserName).Find(&user).RowsAffected
+	}
 	// cnt := models.SearchUserByUserNameAndPassword(&login, &user)
 	// fmt.Printf("-------%#v %d\n", user, cnt)
 
 	// 存在此用户就返回登录成功的信息
 	if cnt != 0 {
-		//用户账号密码正确，就创建token
-		middleware.GenerateToken(c, logininfo, user.ID)
-
-	} else { //统一为账户密码错误
-		c.JSON(http.StatusOK, gin.H{
-			"status":  -1,
-			"message": "username or password error",
-			"data":    nil,
-		})
+		//根据邮箱去查找redis中存的验证码
+		if logininfo.LoginMethod == "login_with_email" {
+			redis_email_code, err := logic.RedisGet(logininfo.UserName)
+			if redis_email_code == "" || err != nil {
+				c.JSON(http.StatusOK, gin.H{
+					"status":  -2,
+					"message": "验证码已经过期，请重新获取",
+					"data":    err,
+				})
+				return
+			}
+			if redis_email_code != logininfo.Password {
+				c.JSON(http.StatusOK, gin.H{
+					"status":  -2,
+					"message": "邮箱验证码不正确",
+					"data":    err,
+				})
+				return
+			}
+			middleware.GenerateToken(c, middleware.LoginInfo{UserName: user.UserName, Password: user.Password}, user.ID)
+		} else if logininfo.LoginMethod == "login_with_username" {
+			//用户账号密码正确，就创建token
+			middleware.GenerateToken(c, logininfo, user.ID)
+		}
+	} else {
+		//统一为账户密码错误
+		if logininfo.LoginMethod == "login_with_username" {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  -1,
+				"message": "username or password error",
+				"data":    nil,
+			})
+		} else if logininfo.LoginMethod == "login_with_email" {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  -2,
+				"message": "此邮箱未注册",
+				"data":    nil,
+			})
+		}
 	}
 }
 
@@ -129,6 +165,7 @@ func UpdateUserInfoHandler(c *gin.Context) {
 	// 得到中间件jwt认证的claims
 	claims := c.MustGet("claims").(*middleware.Myclaims)
 	id := claims.ID //得到用户id
+
 	var updateduserinfo UpdatedUserInfo
 	if err := c.ShouldBind(&updateduserinfo); err != nil {
 		fmt.Println(err)
@@ -139,6 +176,7 @@ func UpdateUserInfoHandler(c *gin.Context) {
 		})
 		return
 	}
+	// fmt.Println("-----------, id = ", id, updateduserinfo)
 	// fmt.Println(id)
 	// fmt.Println("----------------------", *updateduserinfo.Address, *updateduserinfo.Introduction)
 	//根据id插入数据{royal 2 2 成都 5555555555}
@@ -403,4 +441,173 @@ func GetStarPostINfo(c *gin.Context) {
 	})
 
 	// fmt.Printf("%#v-------\n", starpost_info)
+}
+
+// 给用户邮箱发送验证码
+type Emials struct {
+	Email string `form:"email" json:"email" xml:"email"  binding:"required"`
+	Type  string `form:"type" json:"type" xml:"type"  binding:"required"`
+}
+
+// [GIN] 2024/04/01 - 21:40:26 | 200 |    1.4075853s |       127.0.0.1 | POST     "/api/token/sendemailcode/"
+func SendEmailCode(c *gin.Context) {
+	// 判断是注册时获取邮箱，还是在登录时获取邮箱
+
+	//获得用户的邮箱
+	var e Emials
+	if err := c.ShouldBind(&e); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "get email failed" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	// fmt.Println("邮箱", e.Email)
+	// 先判断邮箱是否注册过，没有注册过再
+	var count int64
+	if err := dao.DB.Model(&models.User{}).Where("email = ?", e.Email).Count(&count).Error; err != nil {
+		panic(err)
+	}
+	//注册时，邮箱已经存在
+	if count != 0 && e.Type == "register" {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "此邮箱已注册",
+			"data":    nil,
+		})
+		return
+	}
+
+	// 用邮箱登录时，邮箱不存在
+	if count == 0 && e.Type == "login" {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "此邮箱还未注册",
+			"data":    nil,
+		})
+		return
+	}
+
+	//发之前先判断此邮箱在60s内是否已经发送过验证码
+	redis_email_code, err_ := logic.RedisGet(e.Email)
+	if redis_email_code != "" {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "验证码发送频繁，请稍后再再试",
+			"data":    err_,
+		})
+		return
+	}
+
+	code := logic.GenerateRandCode()
+	if err := logic.SendCodeByEmail(e.Email, code); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "send email code error" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+
+	//发送成功后把code存入redis里面存一分钟
+	if err := logic.RedisSet(e.Email, code, time.Second*60); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "redis set code error" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	// code, _ = logic.RedisGet(e.Email)
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0,
+		"message": "send email code success",
+		"data":    nil,
+	})
+}
+
+// 绑定 JSON  注册的请求信息
+type RegisterInfo struct {
+	UserName  string `form:"username" json:"username" xml:"username"  binding:"required"`
+	Password  string `form:"password" json:"password" xml:"password" binding:"required"`
+	Email     string `form:"email" json:"email" xml:"email" binding:"required"`
+	EmailCode string `form:"email_code" json:"email_code" xml:"email_code" binding:"required"`
+}
+
+// 注册
+func Register(c *gin.Context) {
+	var register_info RegisterInfo
+	if err := c.ShouldBind(&register_info); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "get register info err" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	var count int64
+	if err := dao.DB.Model(&models.User{}).Where("username = ?", register_info.UserName).Count(&count).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "search username error" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	if count != 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "此用户名已经存在",
+			"data":    nil,
+		})
+		return
+	}
+	redis_email_code, err_ := logic.RedisGet(register_info.Email)
+	if err_ != nil || redis_email_code == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "验证码已经过期，请重新获取",
+			"data":    err_,
+		})
+		return
+	}
+	if redis_email_code != register_info.EmailCode {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -2,
+			"message": "邮箱验证码不正确",
+			"data":    err_,
+		})
+		return
+	}
+
+	//满足注册的条件
+	//创建新的账号，密码（MD5加密），邮箱，用户名默认为账号，头像默认为灰色头像
+	var userinfo = models.User{
+		UserName: register_info.UserName,
+		Password: logic.GetMd5(register_info.Password),
+		Email:    register_info.Email,
+	}
+	if err := dao.DB.Create(&userinfo).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "register error" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	var normal_userinfo = models.NormalUser{Name: register_info.UserName}
+	if err := dao.DB.Create(&normal_userinfo).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "register error" + err.Error(),
+			"data":    err,
+		})
+		return
+	}
+	//表示注册成功，应该产生token并且直接进入系统
+	// var logininfo = middleware.LoginInfo{UserName: register_info.UserName, Password: register_info.Password}
+	var user models.User
+	dao.DB.Where("username = ? AND email = ?", register_info.UserName, register_info.Email).Find(&user)
+	middleware.GenerateToken(c, middleware.LoginInfo{UserName: user.UserName, Password: user.Password}, user.ID)
 }

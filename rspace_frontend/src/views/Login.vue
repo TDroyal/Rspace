@@ -1,7 +1,7 @@
 <template>
     <Content>
         <div class="row justify-content-center">
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-5">
                 <div class="card">
                     <div class="card-body">
                         
@@ -22,11 +22,11 @@
                             <div class="mb-3">
                                 <!-- <label for="password" class="form-label">密码</label> -->
                                 <div class="row" style="display: flex; justify-content: center;">
-                                    <div class="col-6">
+                                    <div class="col-6" style="padding-right: 0px;">
                                         <input v-model="codestr" type="text" class="form-control" id="codestr" placeholder="验证码" autocomplete="codestr" maxlength="4" required>
                                     </div>
-                                    <div class="col-5 randcode">
-                                        <div @click="refreshRandomCode" class="randcodestr">{{randcodestr}}</div>
+                                    <div class="col-5 randcode" style="padding-left: 20px;">
+                                        <div style="width: 70%; text-align: center;" @click="refreshRandomCode" class="randcodestr">{{randcodestr}}</div>
                                     </div>
                                     <div class="error-message">{{ error_message }}</div>
                                 </div>
@@ -37,6 +37,22 @@
                                 <button type="submit" class="btn btn-primary position-relative">登录</button>
                             </div>
                         </form>
+                        <!-- 下部选项导航栏 -->
+                        <div class="row nav">
+                            <router-link class=" col-3 nav-bottom nav-button" :to="{name:'LoginWithEmail'}">邮箱登录</router-link>|
+                            <router-link class=" col-3 nav-bottom nav-button" :to="{name:'Register'}">注册账号</router-link>|
+                            <router-link class=" col-3 nav-bottom nav-button" :to="{name:'ConnectWithUs'}">联系我们</router-link>
+                            <!-- <div class="col-3 nav-bottom nav-button">
+                                邮箱登录
+                            </div>|
+                            <div class="col-3 nav-bottom nav-button">
+                                注册
+                            </div>|
+                            <div class="col-3 nav-bottom nav-button">
+                                联系我们
+                            </div> -->
+                        </div>
+                        <BottomTips></BottomTips>
                     </div>
                 </div>
             </div>
@@ -48,12 +64,14 @@
 <script>
 import { useStore } from 'vuex';
 import Content from '../components/Content.vue'
+import BottomTips from '../components/BottomTips.vue'
 import {ref} from 'vue'
 // import { ElMessage } from 'element-plus';
 import router from '@/router/index';   //@定位src目录
+import { ElMessage } from 'element-plus';
 export default {
     name: "Login",
-    components: { Content },
+    components: { Content, BottomTips},
 
     setup() {
         const store = useStore()
@@ -91,6 +109,7 @@ export default {
 
             error_message.value = ""
             store.dispatch("login", {
+                login_method:"login_with_username",
                 username: username.value,
                 password:password.value,
                 success() {
@@ -100,7 +119,9 @@ export default {
                 },
                 error: () => {
                     // 登录失败
+                    ElMessage.error("用户名或密码错误")
                     error_message.value = "用户名或密码错误";
+                    refreshRandomCode()
                     // console.log("failed");
                 }
             })
@@ -166,8 +187,34 @@ input {
     align-items: center; 
     justify-content: center; 
     font-weight: bold;
-    font-size: 25px;
+    font-size: 20px;
     user-select: none;
 }
+
+.nav {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    color: #6c757D;
+}
+
+.nav-bottom {
+    text-decoration: none;
+    text-align: center;
+    font-size: 14px;
+    color: #6c757D;
+    padding: 0px;
+}
+
+.nav-button {
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    color: rgb(19, 18, 18);
+}
+
 
 </style>

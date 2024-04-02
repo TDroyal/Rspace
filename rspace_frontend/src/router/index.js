@@ -3,11 +3,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'  // 首页
 
 import Login from '../views/Login.vue'
+import LoginWithEmail from '../views/LoginWithEmail.vue'
+import Register from '../views/Register.vue'
+import ConnectWithUs from '../views/ConnectWithUs.vue'
+
 import Profile from '../views/Profile.vue'
 import Post from '../views/Post.vue'
 import Star from '../views/Star.vue'
 import EditUserInfo from '../views/EditUserInfo.vue'
 import PostDetail from '../views/PostDetail.vue'
+
+
 
 const routes = [
   {
@@ -48,6 +54,21 @@ const routes = [
     path:'/post/:postid/',
     name:"PostDetail",
     component:PostDetail,
+  },
+  {
+    path:'/loginwithemail/',
+    name:"LoginWithEmail",
+    component:LoginWithEmail,
+  },
+  {
+    path:'/register/',
+    name:"Register",
+    component:Register,
+  },
+  {
+    path:'/connection/',
+    name:"ConnectWithUs",
+    component:ConnectWithUs,
   },
 ]
 
