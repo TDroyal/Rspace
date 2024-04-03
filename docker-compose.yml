@@ -15,7 +15,7 @@ services:
       - 9090:9090
     depends_on:
       - db
-
+      - redis  # 添加Redis服务依赖
   db:
     image: mysql:8.0
     # restart: always
@@ -26,6 +26,12 @@ services:
     ports:
       - 3307:3307
     volumes:
-      - ./data:/var/lib/mysql
+      - ./mysql-data:/var/lib/mysql
       - ./my.cnf:/etc/mysql/my.cnf
+  redis:  # 添加Redis服务
+    image: redis
+    ports:
+      - 6379:6379
 
+    #volumes:
+      #- ./redis-data:/data
