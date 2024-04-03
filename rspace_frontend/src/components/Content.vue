@@ -52,7 +52,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('../assets/background.jpeg');
+    background-image: url('../assets/background5.jpg');
     background-size: cover;
     z-index: 2;
 }
