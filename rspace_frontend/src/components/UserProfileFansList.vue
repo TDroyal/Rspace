@@ -56,6 +56,7 @@
                         </a> -->
                         <div class="horizontal-line"></div>
                     </div>
+                    <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="fansList.total_count" class="mt-4" @change="changePage"/>
                 </div>
             </div>
         </div>
@@ -68,7 +69,9 @@ import {BackendRootURL, FrontendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录 
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
-import { reactive, ref, watchEffect } from 'vue';
+// import { reactive, ref, watchEffect } from 'vue';
+import { reactive, ref, watch } from 'vue';
+
 export default {
     name: "UserProfileFansList",
     components:{},
@@ -81,10 +84,12 @@ export default {
     setup(props) {        
         const store = useStore()
         const fansList = reactive({
+            total_count:0,
             count:0,
             users:[],
         })
-
+        const page_size = ref(10)
+        const current_page = ref(1)
         //在这里请求关注用户的id, 头像avatar，名称name，性别gender     /myspace/getfollowersinfo/
         const get_follower_info = ()=>{
             $.ajax({
@@ -92,6 +97,8 @@ export default {
                 type:"GET",
                 data: {
                     user_id: router.currentRoute.value.params.userid,
+                    page_size: page_size.value,
+                    current_page: current_page.value,
                     search_type: 2,
                 },
                 headers:{
@@ -103,11 +110,16 @@ export default {
                         ElMessage.error("获取关注列表失败")
                         return 
                     }
-                    if (resp.data === null) {
+                    if (resp.data === null || resp.data.data === null) {
+                        fansList.count = 0
+                        fansList.users = []
+                        fansList.total_count = 0
                         return
                     }
-                    fansList.count = resp.data.length
-                    fansList.users = resp.data
+                    // console.log(resp.data)
+                    fansList.count = resp.data.data.length
+                    fansList.users = resp.data.data
+                    fansList.total_count = resp.data.count
                     for(let i = 0; i < fansList.count; i ++ ) {
                         fansList.users[i].avatar = BackendRootURL + "/static/avatar/" + fansList.users[i].avatar
                     }
@@ -123,34 +135,68 @@ export default {
         get_follower_info()
 
         const is_followed = ref(null)
-        watchEffect(() => {
-            is_followed.value = props.is_followed;
-            if(is_followed.value === false) {  //从用户列表中删除当前登录的用户
-                fansList.users = fansList.users.filter(user => user.id !== store.state.user.id);  //前端先删除我这个(登录的)粉丝
-                fansList.count = fansList.users.length;
-            }else { //从用户列表中加入当前登录的用户
-                //先判断当前列表中有没有我这个用户
-                let f = false
-                for(let i = 0; i < fansList.count; i ++ )
-                {
-                    if(fansList.users[i].id === store.state.user.id) {
-                        f = true
-                        break
+        // watchEffect(() => {  //待处理
+        //     is_followed.value = props.is_followed;
+        //     if(is_followed.value === false) {  //从用户列表中删除当前登录的用户
+        //         fansList.users = fansList.users.filter(user => user.id !== store.state.user.id);  //前端先删除我这个(登录的)粉丝
+        //         fansList.count = fansList.users.length;
+        //         // //返回第一页
+        //         // // current_page.value = 1
+        //         // console.log(111111)
+        //         // get_follower_info()
+        //     }else { //从用户列表中加入当前登录的用户
+        //         //先判断当前列表中有没有我这个用户
+        //         let f = false
+        //         for(let i = 0; i < fansList.count; i ++ )
+        //         {
+        //             if(fansList.users[i].id === store.state.user.id) {
+        //                 f = true
+        //                 break
+        //             }
+        //         }
+        //         if(f === false){   //会死循环
+        //             // fansList.count ++ 
+        //             // fansList.users.unshift({
+        //             //     id:store.state.user.id,
+        //             //     avatar :store.state.user.avatar,
+        //             //     name: store.state.user.username,
+        //             //     gender: store.state.user.gender,
+        //             // })
+        //             console.log(22222222222) 
+        //             get_follower_info()
+        //         } 
+                
+        //     }
+        // });
+
+        watch(
+            () => props.is_followed,  //监听props.is_followed是否发送变化即可
+            (newValue) => {
+                // console.log(22222222222);
+                is_followed.value = newValue;
+                if (is_followed.value === false) {
+                    // fansList.users = fansList.users.filter(user => user.id !== store.state.user.id);
+                    // fansList.count = fansList.users.length;
+
+                    //简单粗暴直接返回第一页信息
+                    current_page.value = 1
+                    get_follower_info()
+                } else {
+                let f = false;
+                for (let i = 0; i < fansList.count; i++) {
+                    if (fansList.users[i].id === store.state.user.id) {
+                    f = true;
+                    break;
                     }
                 }
-                if(f === false){
-                    fansList.count ++ 
-                    fansList.users.unshift({
-                        id:store.state.user.id,
-                        avatar :store.state.user.avatar,
-                        name: store.state.user.username,
-                        gender: store.state.user.gender,
-                    })
-                } 
-                
-            }
-        });
-
+                if (f === false) {  //把当前登录用户加进入
+                    //刷新当前页面就可以了
+                    get_follower_info();
+                }
+                }
+            },
+            { immediate: true }
+        );
 
         // 进入用户的个人空间
         const enterUserProfile = (user_id)=>{
@@ -171,12 +217,19 @@ export default {
             
         }
 
+        const changePage = ()=>{
+            get_follower_info()
+        }
         
 
         return {
             fansList,
             enterUserProfile,
             get_follower_info,
+
+            page_size,
+            current_page,
+            changePage,
         }
     }
 }

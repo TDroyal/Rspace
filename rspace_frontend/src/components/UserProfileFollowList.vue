@@ -55,6 +55,7 @@
                         </a> -->
                         <div class="horizontal-line"></div>
                     </div>
+                    <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="followerList.total_count" class="mt-4" @change="changePage"/>
                 </div>
             </div>
         </div>
@@ -67,16 +68,19 @@ import {BackendRootURL, FrontendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录 
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 export default {
     name: "UserProfileFollowList",
     components:{},
     setup() {        
         const store = useStore()
         const followerList = reactive({
+            total_count:0,
             count:0,
             users:[],
         })
+        const page_size = ref(10)
+        const current_page = ref(1)
         //在这里请求关注用户的id, 头像avatar，名称name，性别gender     /myspace/getfollowersinfo/
         const get_follower_info = ()=>{
             $.ajax({
@@ -84,6 +88,8 @@ export default {
                 type:"GET",
                 data: {
                     user_id: router.currentRoute.value.params.userid,
+                    page_size: page_size.value,
+                    current_page: current_page.value,
                     search_type: 1,
                 },
                 headers:{
@@ -95,11 +101,12 @@ export default {
                         ElMessage.error("获取关注列表失败")
                         return 
                     }
-                    if (resp.data === null) {
+                    if (resp.data === null || resp.data.data === null) {
                         return
                     }
-                    followerList.count = resp.data.length
-                    followerList.users = resp.data
+                    followerList.count = resp.data.data.length
+                    followerList.users = resp.data.data
+                    followerList.total_count = resp.data.count
                     for(let i = 0; i < followerList.count; i ++ ) {
                         followerList.users[i].avatar = BackendRootURL + "/static/avatar/" + followerList.users[i].avatar
                     }
@@ -132,12 +139,18 @@ export default {
             
         }
 
-        
+        const changePage = ()=>{
+            get_follower_info()
+        }        
 
         return {
             followerList,
             enterUserProfile,
             get_follower_info,
+
+            page_size,
+            current_page,
+            changePage,
         }
     }
 }

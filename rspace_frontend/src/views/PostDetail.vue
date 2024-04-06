@@ -478,7 +478,7 @@ export default {
 
         // 删除帖子，删除成功后，返回到首页。
         const removeApost = (post_id)=>{
-            console.log(post_id)
+            // console.log(post_id)
             //先是弹出一个提醒框，是否删除。
             ElMessageBox.confirm(
                 '确认是否删除该帖子？',
@@ -501,7 +501,10 @@ export default {
                     success(resp){
                         if(resp.status === 0) {
                             ElMessage.success("删除成功")
-                            router.push({name:"Home"})
+                            // store.commit("updateHomeCurrentPage", 1)
+                            router.push({
+                                name:"Home", 
+                            })
                             return 
                         }
                         ElMessage.error("删除失败")

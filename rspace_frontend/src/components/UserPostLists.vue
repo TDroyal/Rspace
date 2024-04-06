@@ -53,7 +53,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
                                     <!-- <div class="row justify-content-center" style="padding-top: 0px; ">
                                         <div class="col-3">
                                             <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
@@ -90,10 +89,13 @@
                                 </div>
                                 
                             </div>
+                              
                             <div class="expand">
                                 <button v-if="isCollapsed[index] === true" @click="expandCard(index)">展开</button>
                                 <button v-if="isCollapsed[index] === false" @click="collapseCard(index)">收起</button>
                             </div>
+                            <el-pagination hide-on-single-page  v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="$store.state.pagination.user_postlist_page" large background layout="prev, pager, next" :total="posts.total_count" class="mt-4" @change="changePage"/>
+                                  
                         </div>
                     </div>
                 </div>
@@ -118,6 +120,7 @@
 <script>
 import { ref } from 'vue'
 import router from '@/router/index';   //@定位src目录
+// import {useStore} from 'vuex'
 export default {
     name:"UserPostLists",
     components:{},
@@ -138,8 +141,9 @@ export default {
     // setup(props){  //在setup()函数中，将props引入到函数的参数中，以便在setup()函数中使用
     //     console.log(props.posts)  // // 可以通过props.posts来访问父组件传递的posts对象
     // }
-    setup(props) {
-        // console.log('5555555555555555555555555555555555555',props.userinfo)
+    emits: ['changePage'], // 声明 changePage 事件
+    setup(props, context) {
+        // const store = useStore()
         // 点击放大图片和关闭功能
         const showModal = ref(false);
         const modalImage = ref('');
@@ -190,6 +194,13 @@ export default {
             })
         }
 
+        //
+        const page_size = ref(3)
+        // const current_page = ref(1)
+        const changePage = ()=>{
+            
+            context.emit('changePage')
+        }
         return {
             showModal,
             modalImage,
@@ -200,6 +211,9 @@ export default {
             expandCard,
             collapseCard,
             enterPostDetail,
+            changePage,
+            page_size,
+            // current_page,
             // isPostCollapsed,
         }
     }

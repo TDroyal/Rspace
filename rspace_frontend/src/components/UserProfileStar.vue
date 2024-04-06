@@ -95,8 +95,9 @@
                         </div>
                         <div class="horizontal-line"></div>
                     </div>
-
+                    <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="starposts_info.total_count" class="mt-4" @change="changePage"/>
                 </div>
+                
             </div>
         </div>
     </div>
@@ -108,7 +109,7 @@ import {BackendRootURL, FrontendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录 
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 import FormatDateTime from '../utils/DateTime'
 export default {
     name: "UserProfileStar",
@@ -128,39 +129,53 @@ export default {
             '4':'其它'
         })
         const starposts_info = reactive({
+            total_count:0,
             count:0,
             posts:[],
         })
-        $.ajax({
-            url: BackendRootURL + "/myspace/getstarpostinfo/",
-            type:"GET",
-            data:{
-                user_id: router.currentRoute.value.params.userid,
-            },
-            headers:{
-                'Authorization': "Bearer " + store.state.user.jwt,
-            },
-            success(resp) {
-                // console.log(resp)
-                if(resp.status !== 0) {
+        const page_size = ref(10)
+        const current_page = ref(1)
+        const getStarPostlist = ()=>{
+            $.ajax({
+                url: BackendRootURL + "/myspace/getstarpostinfo/",
+                type:"GET",
+                data:{
+                    user_id: router.currentRoute.value.params.userid,
+                    page_size:page_size.value,
+                    current_page:current_page.value,
+                },
+                headers:{
+                    'Authorization': "Bearer " + store.state.user.jwt,
+                },
+                success(resp) {
+                    // console.log(resp)
+                    if(resp.status !== 0) {
+                        ElMessage.error("获取收藏列表失败，请稍后重试")
+                        return 
+                    }
+                    if(resp.data === null) {
+                        return 
+                    }
+                    // console.log(resp.data)
+                    // 
+                    if(resp.data.count !== 0) {
+                        starposts_info.posts = resp.data.data
+                        starposts_info.count = starposts_info.posts.length
+                    }
+                    starposts_info.total_count = resp.data.count
+                    
+                    for(let i = 0; i < starposts_info.count; i ++ ) {
+                        starposts_info.posts[i].avatar = BackendRootURL + "/static/avatar/" + starposts_info.posts[i].avatar
+                        starposts_info.posts[i].push_time = FormatDateTime(starposts_info.posts[i].push_time)
+                    }
+                    // console.log(starposts_info)
+                },
+                error() {
                     ElMessage.error("获取收藏列表失败，请稍后重试")
-                    return 
                 }
-                if(resp.data === null) {
-                    return 
-                }
-                // 
-                starposts_info.count = resp.data.length
-                starposts_info.posts = resp.data
-                for(let i = 0; i < starposts_info.count; i ++ ) {
-                    starposts_info.posts[i].avatar = BackendRootURL + "/static/avatar/" + starposts_info.posts[i].avatar
-                    starposts_info.posts[i].push_time = FormatDateTime(starposts_info.posts[i].push_time)
-                }
-            },
-            error() {
-                ElMessage.error("获取收藏列表失败，请稍后重试")
-            }
-        })
+            })
+        }
+        getStarPostlist()
 
         // 进入用户的个人空间 (后续改为用新窗口打开)
         const enterUserProfile = (user_id)=>{
@@ -197,6 +212,8 @@ export default {
         const changeCollectStatusForAPost = (post_id) =>{
             starposts_info.posts = starposts_info.posts.filter(post => post.post_id !== post_id);  //前端先删除收藏的帖子
             starposts_info.count = starposts_info.posts.length;
+            // starposts_info.count --
+            starposts_info.total_count --
             
             $.ajax({
                 url: BackendRootURL + "/post/changecollectStatus/",
@@ -214,6 +231,10 @@ export default {
                         ElMessage.error("取消收藏失败")
                         return 
                     }
+                    // 如果是当前页面的最后一个被取消，则获取前一页的数据（好像自动操作，不需要代码来控制）
+                    // console.log("当前页面还剩余：", starposts_info.count, "数据库中一共还有多少个：", starposts_info.total_count)
+                    // console.log("当前页面展示：", current_page.value)
+                    getStarPostlist()
                 },
                 error(resp) {
                     ElMessage({
@@ -225,12 +246,19 @@ export default {
             })
         }
 
+        const changePage = ()=>{
+            getStarPostlist()
+        }
+
         return {
             post_type_map,
             starposts_info,
             enterUserProfile,
             enterPostDetail,
             changeCollectStatusForAPost,
+            page_size,
+            current_page,
+            changePage,
         }
     }
 }

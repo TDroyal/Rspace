@@ -16,10 +16,25 @@ import PostDetail from '../views/PostDetail.vue'
 
 
 const routes = [
+  // {
+  //   path: '/',
+  //   name: 'Home',
+  //   component: Home
+  // },
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    beforeEnter: (to, from, next) => {
+      const currentPage = to.query.page || 1;
+      // console.log(currentPage)
+      if (currentPage === 1) {
+        // next({path: '/'}); // 在第一页时继续导航到组件
+        next();
+      } else {
+        next({ path: `/?page=${currentPage}` }); // 在其他页时重定向到新路径
+      }
+    }
   },
   {
     path: '/login/',

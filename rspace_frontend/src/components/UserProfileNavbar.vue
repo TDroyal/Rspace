@@ -31,7 +31,7 @@
 
 <script>
 import { watchEffect, ref} from 'vue' //computed
-
+import { useStore } from 'vuex'
 export default {
     name:"UserProfileNavbar",
     props:{
@@ -46,6 +46,7 @@ export default {
     },
     setup(props, context)
     {
+        const store = useStore()
         const activeNav = ref(props.navSelected)  //选中的导航栏，传给父组件，父组件根据不同的导航栏显示不同的内容。
 
         // 如果希望 activeNav 随着父组件传递的 navSelected 改变而更新，可以使用 watchEffect 监听 props.navSelected 的变化，并在变化时更新 activeNav 的值。
@@ -57,6 +58,10 @@ export default {
         
         const setActiveNav = (nav)=>{
             activeNav.value = nav
+            if(activeNav.value === '0') {
+                store.commit("updateUserPostlistPage", 1)
+                context.emit("changePage")
+            }
             context.emit('changeNavbar', activeNav.value) // 子组件向父组件传递数据可以通过自定义事件来实现。
         }
 

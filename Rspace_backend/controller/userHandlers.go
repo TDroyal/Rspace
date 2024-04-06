@@ -7,12 +7,15 @@ import (
 	"Rspace_backend/models"
 	"fmt"
 	"net/http"
-	"sort"
+
+	// "sort"
+	"strconv"
 	"time"
 
 	// "strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // 登录handler函数
@@ -209,6 +212,11 @@ func GetUserPostsHandler(c *gin.Context) {
 	}
 
 	user_id := c.Query("user_id")
+	page_size := c.Query("page_size")
+	current_page := c.Query("current_page")
+
+	page_size_n, _ := strconv.Atoi(page_size)
+	current_page_n, _ := strconv.Atoi(current_page)
 
 	// if strconv.Itoa(int(id)) != user_id {
 	// 	c.JSON(http.StatusOK, gin.H{
@@ -219,23 +227,41 @@ func GetUserPostsHandler(c *gin.Context) {
 	// 	return
 	// }
 
-	// 查询根据用户id用户的所有帖子
+	// 查询根据用户id用户的当前分页的帖子
+	var count int64
+	if err := dao.DB.Model(&models.Post{}).Where("user_id = ? and deleted_at is NULL", user_id).Count(&count).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "获取帖子总数失败",
+			"data":    err.Error(),
+		})
+		return
+	}
+
 	var normaluser models.NormalUser
-	if err := dao.DB.Model(&models.NormalUser{}).Where("id = ?", user_id).Preload("Posts").Find(&normaluser).Error; err != nil {
+	if err := dao.DB.Model(&models.NormalUser{}).
+		Where("id = ?", user_id).
+		Preload("Posts", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at desc").Limit(page_size_n).Offset(page_size_n * (current_page_n - 1))
+		}).
+		Find(&normaluser).Error; err != nil {
 		panic(err)
 	}
 
 	// 自定义排序函数（降序排序desc）
-	sort.Slice(normaluser.Posts, func(i, j int) bool {
-		return normaluser.Posts[i].CreatedAt.After(normaluser.Posts[j].CreatedAt)
-	})
+	// sort.Slice(normaluser.Posts, func(i, j int) bool {
+	// 	return normaluser.Posts[i].CreatedAt.After(normaluser.Posts[j].CreatedAt)
+	// })
 
 	// fmt.Printf("----------------%#v", normaluser.Posts)
 	//post以切片形式返回
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "get userposts success",
-		"data":    normaluser.Posts,
+		"data": gin.H{
+			"data":  normaluser.Posts,
+			"count": count,
+		},
 	})
 }
 
@@ -333,8 +359,10 @@ func ChangeFollowStatus(c *gin.Context) {
 }
 
 type SearchInfo struct {
-	UserID     uint `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
-	SearchType int  `form:"search_type" json:"search_type" xml:"search_type" binding:"required"`
+	UserID      uint `form:"user_id" json:"user_id" xml:"user_id" binding:"required"`
+	SearchType  int  `form:"search_type" json:"search_type" xml:"search_type" binding:"required"`
+	PageSize    int  `form:"page_size" json:"page_size" xml:"page_size" binding:"required"`
+	CurrentPage int  `form:"current_page" json:"current_page" xml:"current_page" binding:"required"`
 }
 
 type SearchResult struct {
@@ -355,13 +383,28 @@ func GetFollowersInfo(c *gin.Context) {
 		})
 		return
 	}
+
+	var count int64
+
 	var userInfo []SearchResult
 	if searchInfo.SearchType == 1 { //查询user_id关注的用户信息
+
+		if err := dao.DB.Model(&models.Follow{}).Where("followed_user_id = ? AND status = ?", searchInfo.UserID, 1).Count(&count).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  -1,
+				"message": "get follow count error",
+				"data":    err,
+			})
+			return
+		}
+
 		if err := dao.DB.Model(&models.Follow{}).
 			Where("followed_user_id = ? AND status = ?", searchInfo.UserID, 1).
 			Order("updated_at DESC").
 			Select("normal_users.id, normal_users.name, normal_users.avatar, normal_users.gender").
 			Joins("left join normal_users on normal_users.id = follows.isfollowed_user_id").
+			Limit(searchInfo.PageSize).
+			Offset(searchInfo.PageSize * (searchInfo.CurrentPage - 1)).
 			Scan(&userInfo).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  -1,
@@ -374,15 +417,30 @@ func GetFollowersInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  0,
 			"message": "get follow success",
-			"data":    userInfo,
+			"data": gin.H{
+				"data":  userInfo,
+				"count": count,
+			},
 		})
 		return
 	} else if searchInfo.SearchType == 2 {
+
+		if err := dao.DB.Model(&models.Follow{}).Where("isfollowed_user_id = ? AND status = ?", searchInfo.UserID, 1).Count(&count).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"status":  -1,
+				"message": "get fans count error",
+				"data":    err,
+			})
+			return
+		}
+
 		if err := dao.DB.Model(&models.Follow{}).
 			Where("isfollowed_user_id = ? AND status = ?", searchInfo.UserID, 1).
 			Order("updated_at DESC").
 			Select("normal_users.id, normal_users.name, normal_users.avatar, normal_users.gender").
 			Joins("left join normal_users on normal_users.id = follows.followed_user_id").
+			Limit(searchInfo.PageSize).
+			Offset(searchInfo.PageSize * (searchInfo.CurrentPage - 1)).
 			Scan(&userInfo).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  -1,
@@ -395,7 +453,10 @@ func GetFollowersInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status":  0,
 			"message": "get fans success",
-			"data":    userInfo,
+			"data": gin.H{
+				"data":  userInfo,
+				"count": count,
+			},
 		})
 		return
 	}
@@ -415,7 +476,25 @@ type StarPostInfo struct { //gorm匹配Scan从数据库查出来的字段
 // 获取用户user_id收藏的帖子，包含用户头像，id，name, 帖子id, 帖子content，类型，帖子发布日期createAt,
 func GetStarPostINfo(c *gin.Context) {
 	user_id := c.Query("user_id")
+	page_size := c.Query("page_size")
+	current_page := c.Query("current_page")
+
+	page_size_n, _ := strconv.Atoi(page_size)
+	current_page_n, _ := strconv.Atoi(current_page)
 	// fmt.Printf("------------------%#v\n", user_id)
+
+	var count int64
+	if err := dao.DB.Model(&models.Collection{}).Where("collections.user_id = ? and collections.status = ?", user_id, 1).
+		InnerJoins("join posts on posts.id = collections.post_id AND posts.deleted_at is NULL").
+		Count(&count).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  -1,
+			"message": "get starpost total_count error",
+			"data":    err.Error(),
+		})
+		return
+	}
+
 	// 三表联查
 	var starpost_info []StarPostInfo
 
@@ -425,6 +504,8 @@ func GetStarPostINfo(c *gin.Context) {
 		Select("posts.id, posts.type, posts.content, posts.created_at, posts.user_id, normal_users.name, normal_users.avatar").
 		Joins("join posts on posts.id = collections.post_id AND posts.deleted_at is NULL").
 		Joins("join normal_users on normal_users.id = posts.user_id").
+		Limit(page_size_n).
+		Offset(page_size_n * (current_page_n - 1)).
 		Scan(&starpost_info).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  -1,
@@ -433,11 +514,14 @@ func GetStarPostINfo(c *gin.Context) {
 		})
 		return
 	}
-
+	fmt.Println(count, starpost_info)
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "get starpostlist success",
-		"data":    starpost_info,
+		"data": gin.H{
+			"data":  starpost_info,
+			"count": count,
+		},
 	})
 
 	// fmt.Printf("%#v-------\n", starpost_info)

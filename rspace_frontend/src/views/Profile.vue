@@ -8,8 +8,8 @@
 
             <div class="col-md-9 col-12 mycol-right" >
                 <!-- 写一个导航栏 -->
-                <UserProfileNavbar  :is_me="is_me" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
-                <UserPostLists  :posts="posts" :userinfo="user" :is_me="is_me" v-if="navSelected === '0'"></UserPostLists>
+                <UserProfileNavbar  :is_me="is_me" @changePage="changePage" @changeNavbar="changeNavbar" :navSelected="navSelected"></UserProfileNavbar>
+                <UserPostLists @changePage="changePage" :posts="posts" :userinfo="user" :is_me="is_me"  v-if="navSelected === '0'"></UserPostLists>
                 <UserProfileStar :is_me="is_me"  v-if="navSelected === '1'"></UserProfileStar>
                 <UserProfileFollowList  v-if="navSelected === '2'"></UserProfileFollowList>
                 <UserProfileFansList :is_followed="user.is_followed" v-if="navSelected === '3'"></UserProfileFansList>
@@ -41,7 +41,7 @@ export default {
     components: {Content,UserProfileInfo,UserPostLists,UserProfileNavbar,UserProfileStar, UserProfileFansList, UserProfileFollowList},
     setup() {
         const store = useStore()
-
+        // store.commit('updateUserPostlistPage', 1)
         const check_is_login = ()=>{
             if(store.state.user.is_login === false) {
                 router.push({
@@ -65,7 +65,11 @@ export default {
         const user = reactive({
             // ...store.state.user
         })
+
+        const page_size = ref(3)
+        const current_page = ref(1)
         const posts = reactive({
+            total_count:0,
             count:0,
             posts:[],
         })
@@ -116,6 +120,8 @@ export default {
                     type: "GET",
                 data: {
                     user_id: user_id,
+                    page_size: page_size.value,
+                    current_page: store.state.pagination.user_postlist_page,
                 },
                 headers: {
                     'Authorization': "Bearer " + store.state.user.jwt,
@@ -129,9 +135,20 @@ export default {
                     });
                     return;
                 }
-
-                posts.posts = resp.data;
+                // console.log("用户帖子：", resp.data)
+                posts.posts = resp.data.data;  
+                posts.total_count = resp.data.count
                 posts.count = posts.posts.length;
+
+                // console.log("my",posts)
+                if(posts.posts === null || posts.count === null || posts.count === 0) {
+                    if(posts.total_count > 0) {
+                        // console.log(11111)
+                        store.commit('updateUserPostlistPage', store.state.pagination.user_postlist_page - 1)
+                        getUserPosts()
+                        return 
+                    }
+                }
 
                 for (let i = 0; i < posts.count; i++) {
                 let post = posts.posts[i];
@@ -163,7 +180,14 @@ export default {
         // console.log(router.currentRoute.value.params)  // 捕捉userid这个params
 
         watch(() => router.currentRoute.value.params, () => {
+            // console.log(posts.count, posts.total_count)
+            // if((posts.posts === null || posts.count === null || posts.count === 0) && posts.total_count > 0) {
+            //     store.commit('updateUserPostlistPage', store.state.pagination.user_postlist_page - 1)
+            //     getUserPosts()
+            //     return 
+            // }
             loadData();
+            
         }, { immediate: true }); // immediate: true 表示在组件初始化时立即执行
 
         // loadData();
@@ -187,6 +211,12 @@ export default {
             navSelected.value = navSelect
         }
 
+        const changePage = () =>{
+            getUserPosts()
+        }
+
+        
+
         return {
             // store,
             // prefix,
@@ -198,6 +228,9 @@ export default {
             follow,
             unfollow,
             changeNavbar,
+            page_size,
+            current_page,
+            changePage,
         }
     }
 }

@@ -130,10 +130,11 @@
                                     </div>
                                 </div>
                             </div>
-                            
+                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @click="change_page"/>
                         </div>
                     </div>
                 </div>
+                <!-- <el-pagination style="justify-content: center;" large background layout="prev, pager, next" :total="50" class="mt-4"/> -->
             </div>
         </div>
 
@@ -146,21 +147,23 @@
                 </div>
             </div>
         </div>
-
+        <!-- 实现分页 -->
+        
     </Content>
 </template>
 
 <script>
 import Content from '../components/Content.vue'
 import { useStore } from 'vuex'
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch} from 'vue'
 import $ from 'jquery'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElLoading} from 'element-plus'
 import FormatDateTime from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // import prefix from '../utils/ParseImageUrl'
 import router from '@/router/index';   //@定位src目录
 import {BackendRootURL} from '../common_resources/resource';
+// import { useRoute } from 'vue-router';
 export default {
     name:"Home",
     components: { Content },
@@ -181,57 +184,130 @@ export default {
             count:0,
             posts:[],
         })
+        // const route = useRoute();
+        // 每一页的大小，以及当前所在页面。
+        const page_size = ref(5)
+        // let query_page = parseInt(route.query.page);  //当前打开这个用户的id，从url上获取
+        // const current_page = ref(query_page || 1)
+        const current_page = ref(store.state.pagination.home_current_page || 1)
+        const total_count = ref(0)  //总的作品数量
+
+
         // 从数据库中读取最新的5条博客进行展示，返回的信息有哪些要仔细考虑
-        $.ajax({
-            url: BackendRootURL + "/homepost/getposts/",
-            type:"GET",
-            success(resp) {
-                // console.log(resp)
-                if(resp.status != 0) {
+        const getPostsInfo = ()=>{
+            // console.log("调用getPostInfo")
+            const loading = ElLoading.service({
+                lock: true,
+                text: '加载中',
+                background: 'rgba(0, 0, 0, 0.7)',
+            })
+            $.ajax({
+                url: BackendRootURL + "/homepost/getposts/",
+                type:"GET",
+                data:{
+                    page_size:page_size.value,
+                    current_page:current_page.value,
+                },
+                success(resp) {
+                    // console.log(resp)
+                    if(resp.status != 0) {
+                        ElMessage({
+                            message: '获取首页信息失败，请稍后重试',
+                            type: 'error',
+                        })
+                        return 
+                    }
+                    // console.log(resp.data)
+                    total_count.value = resp.data.count
+                    posts.posts = resp.data.data
+                    if(posts.posts !== null) {
+                        posts.count = posts.posts.length
+                    }else if(posts.posts === null || posts.count === 0){
+                        if(total_count.value !== null || total_count.value > 0) {
+                            current_page.value --  
+                            // console.log("调用change_page-----------")
+                            change_page()
+                            return 
+                        }
+                    }
+
+                    // console.log(posts)
+                    // 遍历每个posts的Image，对其进行分割并拼接，组成一个数组
+                    for(let i = 0; i < posts.count; i ++ ) {
+                        let post = posts.posts[i]
+                        let imgstr = post.image
+                        // console.log(post)
+                        // console.log(imageurl)
+                        posts.posts[i].image = ParseImageUrl(imgstr)
+                        posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt)
+                        posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + posts.posts[i].avatar
+                        posts.posts[i].type = post.type
+                        posts.posts[i].comments = {
+                            count:0,
+                            comments:[],
+                        }
+                        posts.posts[i].iscollect_count = 0    // 每个作品被收藏（点赞）的数量
+                    }
+                    // console.log(posts)
+                    
+                    for(let index = 0; index < posts.count; index ++ ) {
+                        // 再获取当前每个post的评论数
+                        get_comments_by_post_id(index, posts.posts[index].ID)
+                        // 获得当前每个post的点赞数，以及每个帖子是否被当前用户收藏
+                        get_iscollect_count_by_post_id(index, posts.posts[index].ID, store.state.user.id)
+                    }
+
+                    
+                },
+                error(resp) {
                     ElMessage({
-                        message: '获取首页信息失败，请稍后重试',
+                        message: '获取用户帖子失败，请稍后重试',
                         type: 'error',
                     })
-                    return 
-                }
-                posts.posts = resp.data
-                posts.count = posts.posts.length
-                // console.log(posts)
-                // 遍历每个posts的Image，对其进行分割并拼接，组成一个数组
-                for(let i = 0; i < posts.count; i ++ ) {
-                    let post = posts.posts[i]
-                    let imgstr = post.image
-                    // console.log(post)
-                    // console.log(imageurl)
-                    posts.posts[i].image = ParseImageUrl(imgstr)
-                    posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt)
-                    posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + posts.posts[i].avatar
-                    posts.posts[i].type = post.type
-                    posts.posts[i].comments = {
-                        count:0,
-                        comments:[],
-                    }
-                    posts.posts[i].iscollect_count = 0    // 每个作品被收藏（点赞）的数量
-                }
-                // console.log(posts)
-                
-                for(let index = 0; index < posts.count; index ++ ) {
-                    // 再获取当前每个post的评论数
-                    get_comments_by_post_id(index, posts.posts[index].ID)
-                    // 获得当前每个post的点赞数，以及每个帖子是否被当前用户收藏
-                    get_iscollect_count_by_post_id(index, posts.posts[index].ID, store.state.user.id)
-                }
+                    console.log(resp)
+                },
+            })
+            loading.close()
+        }
+        // console.log("直接调用getPostsInfo")
+        getPostsInfo()
+        // console.log(11111111111111)
+        //切换分页时，router跳转
+        const change_page = ()=>{
+            // console.log("change_page")
+            router.push({
+                name:"Home",
+                query:{
+                    page: current_page.value,
+                },
+            })
+            getPostsInfo()
+            
+            // 把当前首页的帖子current_page存入vuex
+            store.commit("updateHomeCurrentPage", current_page.value)
+            return 
+        }
+           
+        watch(() => router.currentRoute.value.query, (query) => {  //监听路由发送变化
+            console.log("watch", query.page)  //从一个新的路由过来，它就为空
+            
 
-                
-            },
-            error(resp) {
-                ElMessage({
-                    message: '获取用户帖子失败，请稍后重试',
-                    type: 'error',
+            current_page.value = parseInt(query.page) || store.state.pagination.home_current_page || 1
+            // console.log()
+            if(current_page.value === store.state.pagination.home_current_page) {
+                router.push({
+                    name:"Home",
+                    query:{
+                        page: current_page.value,
+                    },
                 })
-                console.log(resp)
-            },
-        })
+                return
+            }
+            // console.log("调用change_page  dsdadsad")
+            change_page()
+           
+            // getPostsInfo()
+        }, { immediate:true }); // immediate: true 表示在组件初始化时立即执行
 
         // 点击放大图片和关闭功能
         const showModal = ref(false);
@@ -548,6 +624,12 @@ export default {
             changeCollectStatusForAPost,
             get_iscollect_count_by_post_id,
             enterPostDetail,
+
+            page_size,
+            current_page,
+            total_count,
+            getPostsInfo,
+            change_page,
         }
     }
 }

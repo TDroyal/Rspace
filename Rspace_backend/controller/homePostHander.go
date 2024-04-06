@@ -13,6 +13,12 @@ import (
 
 // 获得最新的5个帖子，联表查询，将用户的name和id，avatar返回
 
+// 2024-4-4根据分页来返回对应的帖子信息
+type Pagination struct {
+	PageSize    int `form:"page_size" json:"page_size" xml:"page_size" binding:"required"`
+	CurrentPage int `form:"current_page" json:"current_page" xml:"current_page" binding:"required"`
+}
+
 type PostsWithUserInfo struct {
 	gorm.Model
 	Content string  `form:"content" json:"content" xml:"content"  binding:"required"`
@@ -25,14 +31,44 @@ type PostsWithUserInfo struct {
 
 func GetHomePost(c *gin.Context) {
 	var result []PostsWithUserInfo
-	// 连表查询
-	dao.DB.Model(&models.Post{}).Order("posts.created_at desc").Limit(5).Select("posts.id, posts.created_at, posts.updated_at, posts.deleted_at, posts.content, posts.image, posts.type, posts.user_id, normal_users.name, normal_users.avatar").Joins("JOIN normal_users ON normal_users.id = posts.user_id").Scan(&result)
+
+	//获取分页信息
+	var pagination_info Pagination
+	if err := c.ShouldBind(&pagination_info); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "获取分页信息失败",
+			"data":    err.Error(),
+		})
+		return
+	}
+	//还需要返回总的post数量
+	var count int64
+	if err := dao.DB.Model(&models.Post{}).Where("deleted_at is NULL").Count(&count).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "获取帖子总数失败",
+			"data":    err.Error(),
+		})
+		return
+	}
+
+	// 连表查询 查找第CurrentPage的PageSize
+	// Limit指定要检索的最大记录数Offset指定开始返回记录之前要跳过的记录数
+	if err := dao.DB.Model(&models.Post{}).Order("posts.created_at desc").Limit(pagination_info.PageSize).Offset(pagination_info.PageSize * (pagination_info.CurrentPage - 1)).Select("posts.id, posts.created_at, posts.updated_at, posts.deleted_at, posts.content, posts.image, posts.type, posts.user_id, normal_users.name, normal_users.avatar").Joins("JOIN normal_users ON normal_users.id = posts.user_id").Scan(&result).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  -1,
+			"message": "获取帖子数据失败",
+			"data":    err.Error(),
+		})
+		return
+	}
 	// fmt.Printf("---------%#v------------", result)
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "get posts success",
-		"data":    result,
+		"data":    gin.H{"count": count, "data": result},
 	})
 }
 

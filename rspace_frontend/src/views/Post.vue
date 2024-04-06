@@ -99,7 +99,7 @@
 import Content from '../components/Content.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
-import { ElMessage} from 'element-plus'
+import { ElMessage, ElLoading} from 'element-plus'
 import router from '@/router/index';   //@定位src目录
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
@@ -176,6 +176,13 @@ export default {
                 })
                 return 
             }
+
+            const loading = ElLoading.service({
+                lock: true,
+                text: '帖子上传中',
+                background: 'rgba(0, 0, 0, 0.7)',
+            })
+
             // 得到帖子的相关信息：
             // console.log(contents.value, content_type.value, fileList.value)
             // const post = {
@@ -220,6 +227,7 @@ export default {
                         return
                     }
                     ElMessage.success("分享成功!!!")
+                    store.commit("updateHomeCurrentPage", 1)
                     //跳到首页去
                     router.push({
                         name:"Home",
@@ -229,7 +237,7 @@ export default {
                     console.log(resp)
                 }
             })
-
+            loading.close()
             // console.log(fileList.value)
 
         };

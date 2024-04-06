@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 
 import ModuleUser from './user'
+import ModulePagination from './pagination'
 
 export default createStore({
   state: {
@@ -11,5 +12,6 @@ export default createStore({
   },
   modules: {
     user: ModuleUser,
+    pagination: ModulePagination,
   }
 })
