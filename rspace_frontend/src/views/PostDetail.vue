@@ -168,13 +168,13 @@
         </div>
 
         <!-- 模态框 -->
-        <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+        <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
+            <!-- <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content"> -->
                     <button class="close-button" @click="closeModal">&times;</button>
-                    <img :src="modalImage" class="img-fluid" alt="Full Image">
-                </div>
-            </div>
+                    <img :src="modalImage" class="img-fluid show-image" alt="Full Image">
+                <!-- </div>
+            </div> -->
         </div>
     </Content>
 
@@ -186,10 +186,10 @@ import Content from '../components/Content.vue'
 import router from '@/router/index';   //@定位src目录 
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
-import { ElMessage,  ElMessageBox } from 'element-plus';
+import { ElMessage,  ElMessageBox, ElLoading } from 'element-plus';
 import { ref, reactive } from 'vue';
 import { useStore } from 'vuex';
-import FormatDateTime from '../utils/DateTime'
+import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // 这个界面应该有(如果这个帖子是当前登录用户的那么)编辑帖子按钮（进入一个新的页面编辑帖子/updatepost/:postid）和删除帖子按钮
 export default {
@@ -213,6 +213,11 @@ export default {
         })
 
         // 获得帖子的基本信息
+        const loading = ElLoading.service({
+            lock: true,
+            text: '帖子加载中',
+            background: 'rgba(0, 0, 0, 0.7)',
+        })
         $.ajax({
             url: BackendRootURL + "/homepost/getpostbypostid/",
             type:"GET",
@@ -238,12 +243,14 @@ export default {
                 // if(store.state.user.id === post.user_id) {
                 //     console.log(11111111111)
                 // }
+                
             },
             error(resp) {
                 console.log(resp)
                 ElMessage.error("获取帖子信息失败")
-            }
+            },
         })
+        loading.close()
         // 还需要获得帖子的评论和点赞信息，封装为函数，每次点击删除评论或者提交评论就再请求一次评论信息。
         
 
@@ -305,7 +312,7 @@ export default {
                     comment_list.comments = resp.data
                     for(let i = 0; i < comment_list.count; i ++ ) {
                         comment_list.comments[i].avatar = BackendRootURL + "/static/avatar/" + comment_list.comments[i].avatar
-                        comment_list.comments[i].CreatedAt = FormatDateTime(comment_list.comments[i].CreatedAt)
+                        comment_list.comments[i].CreatedAt = GetTimePeriod(FormatDateTime(comment_list.comments[i].CreatedAt))
                     }
                 },
                 error(resp) {
@@ -609,6 +616,9 @@ svg{
 .modal {
   background: rgba(0, 0, 0, 0.5);
   overflow: auto;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 .modal.show {
@@ -620,7 +630,7 @@ svg{
 
 .close-button {
   position: absolute;
-  top: 10px;
+  top: 60px;
   right: 10px;
   font-size: 24px;
   color: gray;
@@ -669,6 +679,13 @@ svg{
     color:blue;
     cursor: pointer;
 
+}
+
+.show-image {
+    /* 根据图片高宽自适应屏幕百分百 */
+    object-fit: contain; 
+    width: 95%; 
+    height: 85%;
 }
 
 </style>

@@ -37,11 +37,24 @@
                                                     <li><a class="dropdown-item" href="#">Separated link</a></li>
                                                 </ul>
                                             </div> -->
-                                            <select class="form-select" aria-label="Default select example" id="email_suffix">
+                                            <!-- <select class="form-select" aria-label="Default select example" id="email_suffix">
                                                 <option value="1" selected>@qq.com</option>
                                                 <option value="2">@gmail.com</option>
                                                 <option value="3">@163.com</option>
-                                            </select>
+                                            </select> -->
+                                            <el-select
+                                                v-model="email_suffix_idx"
+                                                size="large"
+                                                class="custom-select"
+                                                style="font-weight: bold;"
+                                            >
+                                                <el-option 
+                                                    v-for="item in email_options"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                                />
+                                            </el-select>
                                         </div>
                                     </div>
                                 </div>
@@ -127,6 +140,22 @@ export default{
             '2':'@gmail.com',
             '3':'@163.com',
         })
+
+        const email_options = [
+            {
+                value: '1',
+                label: '@qq.com',
+            },
+            {
+                value: '2',
+                label: '@gmail.com',
+            },
+            {
+                value: '3',
+                label: '@163.com',
+            },
+        ]
+        const email_suffix_idx = ref('1')
         //获取邮箱验证码
         const get_email_code = ()=>{
             if(email_str.value === '') {
@@ -134,8 +163,8 @@ export default{
                 return 
             }
             //然后就根据邮箱发送验证码
-            let email_suffix_idx = $('#email_suffix option:selected').val()
-            email_suffix.value = email_suffix_map[email_suffix_idx]
+            // let email_suffix_idx = $('#email_suffix option:selected').val()
+            email_suffix.value = email_suffix_map[email_suffix_idx.value]
             // console.log(email_str.value + email_suffix.value)
 
             let email_address = email_str.value + email_suffix.value
@@ -296,6 +325,8 @@ export default{
         return {
             email_str,
             email_suffix,
+            email_suffix_idx,
+            email_options,
             email_code,
             username,
             password,

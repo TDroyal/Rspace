@@ -9,15 +9,29 @@
                             <div class="col-6 col-md-9">
                                 <div class="post-title" >发帖</div>
                             </div>
-                            <div class="col-6 col-md-3">
+                            <div class="col-6 col-md-3 ">
                                 <!-- <label for="post_type" class="form-label"></label> -->
-                                <select class="form-select form-select-md" aria-label=".form-select-md example" style="font-weight: bold;" id="post_type" v-model="content_type">
+                                <!-- <select class="form-select form-select-md" aria-label=".form-select-md example" style="font-weight: bold;" id="post_type" v-model="content_type">
                                     <option value="0" selected>帖子类型</option>
                                     <option value="1">日常</option>
                                     <option value="2">新鲜事</option>
                                     <option value="3">笔记</option>
                                     <option value="4">其它</option>
-                                </select>
+                                </select> -->
+                                <el-select
+                                    v-model="content_type"
+                                    placeholder="帖子类型"
+                                    size="large"
+                                    class="custom-select"
+                                    style="font-weight: bold;"
+                                >
+                                    <el-option
+                                        v-for="item in options"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value"
+                                    />
+                                </el-select>
                             </div>
                         </div>
                         <br/>
@@ -28,7 +42,7 @@
                             <div class="col-12">
                                 <div class="mb-3" >
                                     <label for="content" class="form-label">内容</label>
-                                    <textarea class="form-control" id="content" rows="5" placeholder="分享点啥~" v-model="contents" maxlength="200"></textarea>
+                                    <textarea class="form-control" id="content" rows="10"   placeholder="分享点啥~" v-model="contents" maxlength="400"></textarea>
                                     <div class="left-words-count text-end">{{ remainingCharacters }} 字剩余</div>
                                 </div>
                             </div>
@@ -69,7 +83,7 @@
                                     :on-success="handleSuccess"
                                     :on-error="handleError"
                                     :on-exceed="handleExceed"
-                                    :on-change="checkImage"
+                                    :on-change="do_checkImage"
                                     :on-remove="handleRemove"
                                     :file-list="fileList"
                                     :auto-upload="false">
@@ -99,7 +113,7 @@
 import Content from '../components/Content.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
-import { ElMessage, ElLoading} from 'element-plus'
+import { ElMessage, ElLoading} from 'element-plus' // 
 import router from '@/router/index';   //@定位src目录
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
@@ -109,6 +123,31 @@ export default {
     components:{Content},
 
     setup() {
+
+        const options = [
+            {
+                value: '1',
+                label: '日常',
+            },
+            {
+                value: '2',
+                label: '新鲜事',
+            },
+            {
+                value: '3',
+                label: '笔记',
+            },
+            {
+                value: '4',
+                label: '其它',
+            }
+        ]
+        // <option value="0" selected>帖子类型</option>
+        //                             <option value="1">日常</option>
+        //                             <option value="2">新鲜事</option>
+        //                             <option value="3">笔记</option>
+        //                             <option value="4">其它</option>
+
         const store = useStore()
         const check_is_login = ()=>{
             if(store.state.user.is_login === false) {
@@ -130,11 +169,11 @@ export default {
             'Authorization': 'Bearer ' + store.state.user.jwt
         })
         const remainingCharacters = computed(() => {
-            return 200 - contents.value.length;
+            return 400 - contents.value.length;
         });
         const contents = ref('')
         // let content_type = $('#post_type option:selected').val()
-        const content_type = ref('0');
+        const content_type = ref('');
         const contentinfo = reactive({})
         const handleSuccess = (response) => {
             console.log("上传成功:", response);
@@ -162,27 +201,28 @@ export default {
 
         // 手动实现上传图片的函数
         const submitUpload = () => {
-            if(content_type.value === '0') {
+            if(content_type.value === '') {
                 ElMessage({
                     message: '请选择帖子类型',
                     type: 'warning',
                 })
                 return 
             }
-            if(contents.value === '') {
+            if(contents.value === '' || /^\s*$/.test(contents.value)) {  //使用正则表达式判断一个字符串中是否只包含空格
                 ElMessage({
                     message: '帖子内容不能为空',
                     type: 'warning',
                 })
                 return 
             }
-
+            // console.log(contents.value, content_type.value, fileList.value)
+            
             const loading = ElLoading.service({
                 lock: true,
                 text: '帖子上传中',
                 background: 'rgba(0, 0, 0, 0.7)',
             })
-
+            
             // 得到帖子的相关信息：
             // console.log(contents.value, content_type.value, fileList.value)
             // const post = {
@@ -232,6 +272,7 @@ export default {
                     router.push({
                         name:"Home",
                     })
+                    loading.close()
                 },
                 error(resp) {
                     console.log(resp)
@@ -246,8 +287,11 @@ export default {
         //     console.log(file, fileList);
         // };
         const handleRemove = (file) => {
-            console.log(file) // 根据图片名称找到第一个同名的
-
+            // console.log(file) // 根据图片名称找到第一个同名的
+            const index = fileList.value.indexOf(file);
+            if (index !== -1) {
+                fileList.value.splice(index, 1);
+            }
         }
 
         const handlePreview = (file) => {
@@ -259,7 +303,7 @@ export default {
             if (rawFile.raw.type !== 'image/jpg' && rawFile.raw.type !== 'image/png' && rawFile.raw.type !== 'image/jpeg') {
                 ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
                 return false
-            } else if (rawFile.size / 1024 / 1024 > 0.2) {
+            } else if (rawFile.size / 1024 / 1024 > 2) {
                 ElMessage.error('每张图片大小不能超过 2MB！')
                 return false
             }
@@ -267,20 +311,33 @@ export default {
             return true
         }
 
+        const do_checkImage = (rawFile) =>{
+            checkImage(rawFile)
+            filter_pic(checkImage)
+        }
+
         const checkImage = (rawFile) =>{
             // console.log(rawFile)
             if (rawFile.raw.type !== 'image/jpg' && rawFile.raw.type !== 'image/png' && rawFile.raw.type !== 'image/jpeg') {
                 // 不是这个类型的就应该删掉该文件
                 
-                ElMessage.error('Image must be JPG or PNG or JPEG format!')
+                ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
+                handleRemove(rawFile)
                 return false
-            } else if (rawFile.size / 1024 / 1024 > 2) {
-                ElMessage.error('Each image size can not exceed 2MB!')
+            } else if (rawFile.size / 1024 / 1024 > 5) {
+                ElMessage.error('每张图片大小不能超过 5MB！')
+                handleRemove(rawFile)
                 return false
             }
 
-            fileList.value.push(rawFile);  // Store selected files in the fileList array
+            // fileList.value.push(rawFile);  // Store selected files in the fileList array
+            fileList.value.splice(fileList.value.length, 0, rawFile); // 添加文件到 fileList 数组末尾
             return true
+        }
+
+        const filter_pic = ()=>{
+            const filteredFileList = fileList.value.filter(checkImage);
+            fileList.value = filteredFileList;
         }
 
         const handleExceed = ()=>{
@@ -292,6 +349,7 @@ export default {
         }
 
         return {
+            options,
             contents,
             remainingCharacters,
             content_type,
@@ -308,6 +366,8 @@ export default {
             handleExceed,
             checkImage,
             progress,
+            filter_pic,
+            do_checkImage,
         };
     }   
 }
@@ -330,6 +390,7 @@ export default {
 
 .post-title{
     font-weight: bold;
+    font-size: 20px;
 }
 
 .form-label{
@@ -349,4 +410,12 @@ button{
 .upload-demo{
     width: 100%;
 }
+
+.custom-select .el-input__inner::placeholder {
+    
+    color: black;
+}
+
+
+
 </style>

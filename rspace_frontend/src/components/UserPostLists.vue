@@ -98,6 +98,10 @@
                                   
                         </div>
                     </div>
+                    
+                    <div v-if="posts.total_count === 0">
+                        <el-empty description="没有数据" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,13 +109,13 @@
     </div>
 
     <!-- 模态框 -->
-    <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" >
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+    <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
+        <!-- <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"> -->
             <button class="close-button" @click="closeModal">&times;</button>
-            <img :src="modalImage" class="img-fluid" alt="Full Image">
-            </div>
-        </div>
+            <img :src="modalImage" class="img-fluid show-image"  alt="Full Image">
+            <!-- </div>
+        </div> -->
     </div>
 
 </template>
@@ -276,6 +280,9 @@ export default {
 .modal {
   background: rgba(0, 0, 0, 0.5);
   overflow: auto;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 .modal.show {
@@ -287,7 +294,7 @@ export default {
 
 .close-button {
   position: absolute;
-  top: 10px;
+  top: 60px;
   right: 10px;
   font-size: 24px;
   color: gray;
@@ -324,6 +331,13 @@ export default {
 .post-details:hover {
     color: rgb(109, 193, 221);
     cursor: pointer;
+}
+
+.show-image {
+    /* 根据图片高宽自适应屏幕百分百 */
+    object-fit: contain; 
+    width: 95%; 
+    height: 85%;
 }
 
 </style>

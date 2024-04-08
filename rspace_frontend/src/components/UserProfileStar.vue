@@ -96,6 +96,9 @@
                         <div class="horizontal-line"></div>
                     </div>
                     <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="starposts_info.total_count" class="mt-4" @change="changePage"/>
+                    <div v-if="starposts_info.total_count === 0">
+                        <el-empty description="没有数据" />
+                    </div>
                 </div>
                 
             </div>
@@ -110,7 +113,7 @@ import router from '@/router/index';   //@定位src目录
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
 import { ref, reactive } from 'vue';
-import FormatDateTime from '../utils/DateTime'
+import {FormatDateTime} from '../utils/DateTime'
 export default {
     name: "UserProfileStar",
     components:{},

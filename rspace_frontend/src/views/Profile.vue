@@ -28,7 +28,7 @@ import UserProfileInfo from '../components/UserProfileInfo.vue'
 import UserPostLists from '../components/UserPostLists.vue'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
-import FormatDateTime from '../utils/DateTime'
+import {FormatDateTime} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 import UserProfileNavbar from '../components/UserProfileNavbar.vue'
 import UserProfileStar from '../components/UserProfileStar.vue';

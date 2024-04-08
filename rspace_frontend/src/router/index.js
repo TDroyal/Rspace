@@ -12,7 +12,7 @@ import Post from '../views/Post.vue'
 import Star from '../views/Star.vue'
 import EditUserInfo from '../views/EditUserInfo.vue'
 import PostDetail from '../views/PostDetail.vue'
-
+import Notifications from '../views/Notifications.vue'
 
 
 const routes = [
@@ -84,6 +84,11 @@ const routes = [
     path:'/connection/',
     name:"ConnectWithUs",
     component:ConnectWithUs,
+  },
+  {
+    path:'/notifications/',
+    name:"Notifications",
+    component:Notifications,
   },
 ]
 

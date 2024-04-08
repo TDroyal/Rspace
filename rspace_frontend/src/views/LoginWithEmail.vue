@@ -16,11 +16,24 @@
                                             <input v-model="email_str" type="text" class="form-control" placeholder="邮箱" aria-label="email" aria-describedby="basic-addon2" required>
                                         </div>
                                         <div class="col-5" style="padding-left: 0px;">
-                                            <select class="form-select" aria-label="Default select example" id="email_suffix">
+                                            <!-- <select class="form-select" aria-label="Default select example" id="email_suffix">
                                                 <option value="1" selected>@qq.com</option>
                                                 <option value="2">@gmail.com</option>
                                                 <option value="3">@163.com</option>
-                                            </select>
+                                            </select> -->
+                                            <el-select
+                                                v-model="email_suffix_idx"
+                                                size="large"
+                                                class="custom-select"
+                                                style="font-weight: bold;"
+                                            >
+                                                <el-option 
+                                                    v-for="item in email_options"
+                                                    :key="item.value"
+                                                    :label="item.label"
+                                                    :value="item.value"
+                                                />
+                                            </el-select>
                                         </div>
                                     </div>
                                 </div>
@@ -91,6 +104,22 @@ export default{
             '3':'@163.com',
         })
 
+        const email_options = [
+            {
+                value: '1',
+                label: '@qq.com',
+            },
+            {
+                value: '2',
+                label: '@gmail.com',
+            },
+            {
+                value: '3',
+                label: '@163.com',
+            },
+        ]
+        
+        const email_suffix_idx = ref('1')
         //获取邮箱验证码
         const get_email_code = ()=>{
             if(email_str.value === '') {
@@ -98,11 +127,12 @@ export default{
                 return 
             }
             //然后就根据邮箱发送验证码
-            let email_suffix_idx = $('#email_suffix option:selected').val()
-            email_suffix.value = email_suffix_map[email_suffix_idx]
+            // let email_suffix_idx = $('#email_suffix option:selected').val()
+            email_suffix.value = email_suffix_map[email_suffix_idx.value]
             // console.log(email_str.value + email_suffix.value)
 
             let email_address = email_str.value + email_suffix.value
+            // console.log(email_address)
             $.ajax({
                 url: BackendRootURL + '/api/sendemailcode/',
                 type:"POST",
@@ -154,8 +184,8 @@ export default{
         //登录
         const login = ()=>{
             //先去后台查找邮箱是否存在，存在再找出对应的账号，密码，生成token
-            let email_suffix_idx = $('#email_suffix option:selected').val()
-            email_suffix.value = email_suffix_map[email_suffix_idx]
+            // let email_suffix_idx = $('#email_suffix option:selected').val()
+            email_suffix.value = email_suffix_map[email_suffix_idx.value]
             let email_address = email_str.value + email_suffix.value
 
             store.dispatch("login", {
@@ -183,9 +213,11 @@ export default{
         return {
             email_str,
             email_suffix,
+            email_suffix_idx,
             email_code,
             countdown,
             email_suffix_map,
+            email_options,
             get_email_code,
             login,
         }

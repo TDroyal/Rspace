@@ -57,6 +57,9 @@
                         <div class="horizontal-line"></div>
                     </div>
                     <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="fansList.total_count" class="mt-4" @change="changePage"/>
+                    <div v-if="fansList.total_count === 0">
+                        <el-empty description="没有数据" />
+                    </div>
                 </div>
             </div>
         </div>

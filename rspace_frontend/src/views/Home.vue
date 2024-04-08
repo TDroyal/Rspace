@@ -1,6 +1,6 @@
 <template>
     <Content>
-        <div class="row justify-content-center" style="z-index: 3000000;">
+        <div class="row justify-content-center" >
             <div class="col-md-9 col-12">
                 <div v-for="(post, index) in posts.posts" :key="post.ID" >
                     <div class="card card-single">
@@ -130,7 +130,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @click="change_page"/>
+                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @change="change_page"/>
                         </div>
                     </div>
                 </div>
@@ -139,13 +139,13 @@
         </div>
 
         <!-- 模态框 -->
-        <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+        <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
+            <!-- <div class="modal-dialog modal-dialog-centered" style="width: 100%; height: 100%;">
+                <div class="modal-content" style="width: 100%; height: 100%;"> -->
                     <button class="close-button" @click="closeModal">&times;</button>
-                    <img :src="modalImage" class="img-fluid" alt="Full Image">
-                </div>
-            </div>
+                    <img :src="modalImage" class="img-fluid show-image"  alt="Full Image">
+                <!-- </div>
+            </div> -->
         </div>
         <!-- 实现分页 -->
         
@@ -158,7 +158,7 @@ import { useStore } from 'vuex'
 import { ref, reactive, watch} from 'vue'
 import $ from 'jquery'
 import { ElMessage, ElLoading} from 'element-plus'
-import FormatDateTime from '../utils/DateTime'
+import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // import prefix from '../utils/ParseImageUrl'
 import router from '@/router/index';   //@定位src目录
@@ -239,7 +239,7 @@ export default {
                         // console.log(post)
                         // console.log(imageurl)
                         posts.posts[i].image = ParseImageUrl(imgstr)
-                        posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt)
+                        posts.posts[i].CreatedAt = GetTimePeriod(FormatDateTime(posts.posts[i].CreatedAt))
                         posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + posts.posts[i].avatar
                         posts.posts[i].type = post.type
                         posts.posts[i].comments = {
@@ -289,7 +289,7 @@ export default {
         }
            
         watch(() => router.currentRoute.value.query, (query) => {  //监听路由发送变化
-            console.log("watch", query.page)  //从一个新的路由过来，它就为空
+            // console.log("watch", query.page)  //从一个新的路由过来，它就为空
             
 
             current_page.value = parseInt(query.page) || store.state.pagination.home_current_page || 1
@@ -361,7 +361,7 @@ export default {
                     comment_list.comments = resp.data
                     for(let i = 0; i < comment_list.count; i ++ ) {
                         comment_list.comments[i].avatar = BackendRootURL + "/static/avatar/" + comment_list.comments[i].avatar
-                        comment_list.comments[i].CreatedAt = FormatDateTime(comment_list.comments[i].CreatedAt)
+                        comment_list.comments[i].CreatedAt = GetTimePeriod(FormatDateTime(comment_list.comments[i].CreatedAt))
                     } 
                     //把comment_list放到对应的index下
                     if(comment_list.count === 0) {
@@ -685,6 +685,9 @@ svg {
 .modal {
   background: rgba(0, 0, 0, 0.5);
   overflow: auto;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 .modal.show {
@@ -696,7 +699,7 @@ svg {
 
 .close-button {
   position: absolute;
-  top: 10px;
+  top: 60px;
   right: 10px;
   font-size: 24px;
   color: gray;
@@ -781,6 +784,13 @@ svg {
 .post-details:hover {
     color: rgb(109, 193, 221);
     cursor: pointer;
+}
+
+.show-image {
+    /* 根据图片高宽自适应屏幕百分百 */
+    object-fit: contain; 
+    width: 95%; 
+    height: 85%;
 }
 
 </style>
