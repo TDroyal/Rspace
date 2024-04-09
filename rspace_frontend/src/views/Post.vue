@@ -324,8 +324,8 @@ export default {
                 ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
                 handleRemove(rawFile)
                 return false
-            } else if (rawFile.size / 1024 / 1024 > 5) {
-                ElMessage.error('每张图片大小不能超过 5MB！')
+            } else if (rawFile.size / 1024 / 1024 > 15) {
+                ElMessage.error('每张图片大小不能超过 15MB！')
                 handleRemove(rawFile)
                 return false
             }
