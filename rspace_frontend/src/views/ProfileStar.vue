@@ -4,15 +4,6 @@
         <div class="card-body">
             <div class="card">
                 <div class="card-body">
-                    <!-- <div class="row justify-content-center">
-                        <div class="col-12">
-                            <div class="star-title">
-                                收藏
-                            </div>
-                            <div class="horizontal-line"></div>
-                        </div>
-                    </div>
-                    <br/> -->
 
                     <!-- 只有当前查看的用户是自己的才显示取消以及取消符号 -->
                     <div class="row justify-content-center" v-if="is_me === true">
@@ -114,17 +105,15 @@ import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
 import { ref, reactive } from 'vue';
 import {FormatDateTime} from '../utils/DateTime'
+import { useRoute } from 'vue-router';
 export default {
-    name: "UserProfileStar",
+    name: "ProfileStar",
     components:{},
-    props:{
-        is_me:{
-            type:Boolean,
-            requried:true,
-        },
-    }, 
     setup() {
+        const route = useRoute()
         const store = useStore()
+        let user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
+        const is_me = ref(user_id === store.state.user.id)  //判断当前查看的空间是否是我自己
         const post_type_map = reactive({
             '1':'日常',
             '2':'新鲜事',
@@ -254,6 +243,7 @@ export default {
         }
 
         return {
+            is_me,
             post_type_map,
             starposts_info,
             enterUserProfile,

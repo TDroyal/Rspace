@@ -276,9 +276,10 @@ export default {
                 },
                 error(resp) {
                     console.log(resp)
+                    loading.close()
                 }
             })
-            loading.close()
+            // loading.close()
             // console.log(fileList.value)
 
         };
@@ -324,8 +325,9 @@ export default {
                 ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
                 handleRemove(rawFile)
                 return false
-            } else if (rawFile.size / 1024 / 1024 > 15) {
-                ElMessage.error('每张图片大小不能超过 15MB！')
+            } else if (rawFile.size / 1024 / 1024 > 10) {  //出网带宽峰值小于等于10Mbit/s时，阿里云会分配10Mbit/s入网带宽   出网带宽峰值大于10Mbit/s时，阿里云会分配峰值相等的入网带宽
+
+                ElMessage.error('每张图片大小不能超过 10MB！')
                 handleRemove(rawFile)
                 return false
             }

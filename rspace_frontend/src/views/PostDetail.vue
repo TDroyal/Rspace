@@ -321,7 +321,6 @@ export default {
             })
         }
         get_comments_by_post_id(router.currentRoute.value.params.postid)
-        // console.log(comment_list)
 
         // 评论提交
         const postAComment = (post_id)=>{
@@ -367,6 +366,24 @@ export default {
                     comments.value = ""
                     //渲染每个帖子对应的评论列表, 成功后。
                     get_comments_by_post_id(post_id)
+                    
+                    //然后发送评论通知1
+                    if(store.state.user.id != post.user_id) {
+                        $.ajax({
+                            url: BackendRootURL + "/notification/post/",   //初次评论：发送通知
+                            type:"POST",
+                            data:{
+                                generate_user_id: store.state.user.id,
+                                receive_user_id: post.user_id,
+                                post_id: post_id,
+                                notification_type: 1, //1是评论通知
+                            },
+                            headers:{
+                                'Authorization': "Bearer " + store.state.user.jwt,
+                            },
+                            // 发送通知不需要得到反馈，失败了影响也不大。
+                        })
+                    }
                 },
                 error(resp) {
                     ElMessage({
@@ -471,6 +488,25 @@ export default {
                         iscollect.value = true
                         iscollect_count.value += 1
                     }
+
+                    //然后发送点赞通知2
+                    if(iscollect.value === true && store.state.user.id != post.user_id) {
+                        $.ajax({
+                            url: BackendRootURL + "/notification/post/",  
+                            type:"POST",
+                            data:{
+                                generate_user_id: store.state.user.id,
+                                receive_user_id: post.user_id,
+                                post_id: post_id,
+                                notification_type: 2, //2是点赞通知
+                            },
+                            headers:{
+                                'Authorization': "Bearer " + store.state.user.jwt,
+                            },
+                            // 发送通知不需要得到反馈，失败了影响也不大。
+                        })
+                    }
+
                 },
                 error(resp) {
                     ElMessage({

@@ -6,11 +6,11 @@
                     <div class="row justify-content-center">
                         <div class="col-12">
                             <div class="mypost-title" v-if="is_me === true">我的帖子</div>
-                            <div class="mypost-title" v-else>{{userinfo.username}}的帖子</div>
+                            <div class="mypost-title" v-else>{{user.username}}的帖子</div>
                         </div>
                     </div>
                     <br/>
-                    <div v-if="posts && userinfo" >
+                    <div v-if="posts && user" >
                         <div v-for="(post, index) in posts.posts" :key="post.ID">
                             <div class="horizontal-line"></div>
                             <!-- :class="{ expanded: index === expandedIndex }" -->
@@ -20,13 +20,13 @@
                                     <!-- 展示头像和姓名 -->
                                     <div class="row">
                                         <div class="col-md-1 col-3">
-                                            <img class="img-fluid avatar" :src="userinfo.avatar" alt="">
+                                            <img class="img-fluid avatar" :src="user.avatar" alt="">
                                         </div>
                                         <!-- align-items: center; -->
                                         <div class="col-md-11 col-9" style="display: flex;  padding-left: 0px; ">
                                             <div class="row" style="width: 100%;">
                                                 <div class="col-8 col-md-9" style="font-weight: bold; padding-right: 0px;">
-                                                    {{userinfo.username}}
+                                                    {{user.username}}
                                                 </div>
                                                 <div class="col-4 col-md-3 post-details" @click="enterPostDetail(post.ID)">
                                                     详情
@@ -53,39 +53,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- <div class="row justify-content-center" style="padding-top: 0px; ">
-                                        <div class="col-3">
-                                            <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
-                                        </div>
-                                        <div class="col-3">
-                                            <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
-                                        </div>
-                                        <div class="col-3">
-                                            <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
-                                        </div>
-                                    </div>
-                                    <div class="row justify-content-center" style="padding-top: 0px; ">
-                                        <div class="col-3">
-                                            <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
-                                        </div>
-                                        <div class="col-3">
-                                            <img class="img-thumbnail" :src="post.image" alt="" @click="showFullImage(post.image)">
-                                        </div>
-                                    </div> -->
-                                    <!-- <div class="expand">
-                                        <button v-if="isCollapsed[index]" @click="expandCard(index)">展开</button>
-                                        <button v-else @click="collapseCard(index)">收起</button>
-                                    </div> -->
-                                    <!-- <template v-if="isPostCollapsed(post.id)">
-                                        <div class="expand">
-                                            <button @click="expandCard(post.id)">展开</button>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <div class="expand">
-                                            <button @click="collapseCard(post.id)">收起</button>
-                                        </div>
-                                    </template> -->
                                 </div>
                                 
                             </div>
@@ -106,49 +73,182 @@
             </div>
         </div>
 
+        <!-- 模态框 -->
+        <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
+            <!-- <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content"> -->
+                <button class="close-button" @click="closeModal">&times;</button>
+                <img :src="modalImage" class="img-fluid show-image"  alt="Full Image">
+                <!-- </div>
+            </div> -->
+        </div>
     </div>
-
-    <!-- 模态框 -->
-    <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
-        <!-- <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content"> -->
-            <button class="close-button" @click="closeModal">&times;</button>
-            <img :src="modalImage" class="img-fluid show-image"  alt="Full Image">
-            <!-- </div>
-        </div> -->
-    </div>
-
 </template>
 
-
 <script>
-import { ref } from 'vue'
+import { useStore } from 'vuex'
+import { useRoute } from 'vue-router';
+import { ref, reactive, watch } from 'vue'
 import router from '@/router/index';   //@定位src目录
-// import {useStore} from 'vuex'
-export default {
-    name:"UserPostLists",
+import $ from 'jquery'
+import {BackendRootURL} from '../common_resources/resource';
+import { ElMessage } from 'element-plus'
+import {FormatDateTime} from '../utils/DateTime'
+import ParseImageUrl from '../utils/ParseImageUrl'
+
+export default{
+    name:"ProfilePostLists",
     components:{},
-    props:{  //父组件向子组件传递信息props  从父组件获取的信息
-        posts:{
-            type:Object,
-            requried:true,
-        },
-        userinfo:{
-            type:Object,
-            requried:true,
-        },
-        is_me:{
-            type:Boolean,
-            requried:true,
-        },
-    },
-    // setup(props){  //在setup()函数中，将props引入到函数的参数中，以便在setup()函数中使用
-    //     console.log(props.posts)  // // 可以通过props.posts来访问父组件传递的posts对象
-    // }
-    emits: ['changePage'], // 声明 changePage 事件
-    setup(props, context) {
-        // const store = useStore()
-        // 点击放大图片和关闭功能
+    setup(){
+        //需要获取换页，posts，user, is_me 
+        const store = useStore()
+        const check_is_login = ()=>{
+            if(store.state.user.is_login === false) {
+                router.push({
+                    name:"Login",
+                })
+                return false
+            }
+            return true
+        }
+        if(check_is_login() === false) {
+            return
+        }
+
+        const route = useRoute();
+        let user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
+        const is_me = ref(user_id === store.state.user.id)  //判断当前查看的空间是否是我自己
+        const user = reactive({
+            // ...store.state.user
+        })
+        const page_size = ref(3)
+        const current_page = ref(1)
+        const posts = reactive({
+            total_count:0,
+            count:0,
+            posts:[],
+        })
+
+        //先获取用户个人基本信息
+        const getUserInfo = async () => {
+            // if (is_me.value === false) {
+                // console.log(is_me.value)
+                try {
+                    const resp = await $.ajax({
+                        url: BackendRootURL + "/myspace/getuserinfo/",
+                        type: "GET",
+                        data: {
+                            user_id: user_id,  //这个是当前查看的用户id
+                        },
+                        headers: {
+                            'Authorization': "Bearer " + store.state.user.jwt,  //这个里面存入的是当前登录的用户id
+                        },
+                    });
+
+                    if (resp.status != 0) {
+                        return;
+                    }
+                    // console.log(resp.data)
+                    user.id = resp.data.normal_userinfo.id,
+                    user.username = resp.data.normal_userinfo.name,
+                    user.age = resp.data.normal_userinfo.age,
+                    user.avatar = BackendRootURL + '/static/avatar/' + resp.data.normal_userinfo.avatar,
+                    user.gender = resp.data.normal_userinfo.gender,
+                    user.address = resp.data.normal_userinfo.address,
+                    user.introduction = resp.data.normal_userinfo.introduction
+                    // 再得到后端传过来的粉丝数量，关注数量，以及当前登录用户是否关注此用户
+                    user.fanscount = resp.data.fanscount
+                    user.followercount = resp.data.followercount
+                    user.is_followed = resp.data.is_followed
+
+                    // console.log("111111111111111", user);
+                    // console.log(user)
+                } catch (error) {
+                    console.log(error);
+                }
+            // }
+        };
+
+        const getUserPosts = async () => {
+            try {
+                const resp = await $.ajax({
+                    url:  BackendRootURL + "/myspace/getuserposts/",
+                    type: "GET",
+                data: {
+                    user_id: user_id,
+                    page_size: page_size.value,
+                    current_page: store.state.pagination.user_postlist_page,
+                },
+                headers: {
+                    'Authorization': "Bearer " + store.state.user.jwt,
+                },
+                });
+
+                if (resp.status != 0) {
+                    ElMessage({
+                        message: '获取用户帖子失败，请稍后重试',
+                        type: 'error',
+                    });
+                    return;
+                }
+                // console.log("用户帖子：", resp.data)
+                posts.posts = resp.data.data;  
+                posts.total_count = resp.data.count
+                posts.count = posts.posts.length;
+                
+                // console.log("my",posts)
+                if(posts.posts === null || posts.count === null || posts.count === 0) {
+                    if(posts.total_count > 0) {
+                        // console.log(11111)
+                        store.commit('updateUserPostlistPage', store.state.pagination.user_postlist_page - 1)
+                        getUserPosts()
+                        return 
+                    }
+                }
+
+                for (let i = 0; i < posts.count; i++) {
+                    let post = posts.posts[i];
+                    let imgstr = post.image;
+                    posts.posts[i].image = ParseImageUrl(imgstr);
+                    posts.posts[i].CreatedAt = FormatDateTime(posts.posts[i].CreatedAt);
+                }
+                
+            } catch (error) {
+                ElMessage({
+                message: '获取用户帖子失败，请稍后重试',
+                type: 'error',
+                });
+                console.log(error);
+            }
+        };
+        // 我将获取用户信息和获取用户帖子的部分封装为异步函数getUserInfo和getUserPosts。然后，在loadData函数中使用await关键字按顺序执行这两个异步函数。
+        const loadData = async () => {
+            user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
+            is_me.value = user_id === store.state.user.id;
+            await getUserInfo();
+            await getUserPosts();
+            
+            // 在这里可以继续操作userinfo和posts
+        };
+        // 监听路由参数的变化
+        // 你可以使用watch()函数来监听路由参数的变化，并在参数变化时重新获取用户信息。
+        watch(() => router.currentRoute.value.params, () => {
+            loadData();
+        }, { immediate: true }); // immediate: true 表示在组件初始化时立即执行
+
+        // 展开和收起功能
+        let isCollapsed = ref(Array((posts.count ? posts.count : 100)).fill(true));
+        
+
+        const changePage = () =>{
+            getUserPosts()
+            for(let i = 0; i < isCollapsed.value.length; i ++ )
+            {
+                isCollapsed.value[i] = true
+            }
+        }
+
+
         const showModal = ref(false);
         const modalImage = ref('');
         const showFullImage = (imageUrl) => {
@@ -161,33 +261,14 @@ export default {
             modalImage.value = '';
             showModal.value = false;
         };
-        // 展开和收起功能
-        let isCollapsed = ref(Array((props.posts.count ? props.posts.count : 100)).fill(true));
-        // const isCollapsed = ref({});
-        // const expandedIndex = ref(-1);
-
-        // console.log(props.posts)
-
-        // 在Vue的生命周期中，setup()函数在组件实例被创建时执行，但是在模板渲染之前执行。
-        // 因此，在初始渲染时，console.log(isCollapsed.value[0])语句被执行时，isCollapsed数组的值可能还没有被设置。
-        // onMounted(() => {
-        //     // isCollapsed = ref(Array(props.posts.count).fill(true));
-        //     console.log(isCollapsed.value[1])
-        // })
-        // console.log(isCollapsed.value[0])
+        
         const expandCard = (index) => {
             isCollapsed.value[index] = false;
-            // console.log(isCollapsed.value)
-            // console.log(index)
-            // expandedIndex.value = index;
         };
 
         const collapseCard = (index) => {
             isCollapsed.value[index] = true;
-            // expandedIndex.value = -1;
         };
-
-
          // 进入帖子详情页面
          const enterPostDetail = (post_id)=> {
             router.push({
@@ -198,41 +279,30 @@ export default {
             })
         }
 
-        //
-        const page_size = ref(3)
-        // const current_page = ref(1)
-        const changePage = ()=>{
-            
-            context.emit('changePage')
-        }
         return {
-            showModal,
+            user,
+            is_me,
+            posts,
+            page_size,
+            current_page,
             modalImage,
+            isCollapsed,
+            showModal,
+            changePage,
             showFullImage,
             closeModal,
-            isCollapsed,
-            // expandedIndex,
             expandCard,
             collapseCard,
             enterPostDetail,
-            changePage,
-            page_size,
-            // current_page,
-            // isPostCollapsed,
         }
-    }
+
+    },
 }
 
 </script>
 
 
-
 <style scoped>
-
-/* .card{
-    box-shadow: 2px 2px 3px lightgray,  -2px 0 3px lightgray;
-} */
-
 .card-out {
     box-shadow: none;
     border: none;
@@ -247,11 +317,6 @@ export default {
     /* max-height: 200px; */
     overflow: hidden;  /*以便在收起时隐藏超出的内容。  */
 }
-
-/* .single-post.expanded {
-  max-height: none;
-} */
-
 .single-post {
     box-shadow: none;
     border: none;
@@ -339,5 +404,6 @@ export default {
     width: 95%; 
     height: 85%;
 }
+
 
 </style>

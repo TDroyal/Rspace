@@ -13,7 +13,10 @@ import Star from '../views/Star.vue'
 import EditUserInfo from '../views/EditUserInfo.vue'
 import PostDetail from '../views/PostDetail.vue'
 import Notifications from '../views/Notifications.vue'
-
+import ProfilePostLists from '../views/ProfilePostLists.vue'
+import ProfileStar from '../views/ProfileStar.vue'
+import ProfileFollowList from '../views/ProfileFollowList.vue'
+import ProfileFanList from '../views/ProfileFanList.vue'
 
 const routes = [
   // {
@@ -49,6 +52,31 @@ const routes = [
     path: '/profile/:userid/',
     name: 'Profile',
     component: Profile,
+    redirect: to => {
+      return `/profile/${to.params.userid}/posts/`; //进入profile页面后选择显示的默认页面
+    },  
+    children: [
+      {
+        path: 'posts/',
+        name: 'ProfilePostLists',
+        component: ProfilePostLists,
+      },
+      {
+        path: 'star/',
+        name: 'ProfileStar',
+        component: ProfileStar,
+      },
+      {
+        path: 'following/',
+        name: 'ProfileFollowList',
+        component: ProfileFollowList,
+      },
+      {
+        path: 'fans/',
+        name: 'ProfileFanList',
+        component: ProfileFanList,
+      },
+    ]
   },
   {
     path: '/share/',

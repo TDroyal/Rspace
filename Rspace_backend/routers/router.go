@@ -35,6 +35,7 @@ func SetupRouter() *gin.Engine {
 	// 用户个人信息路由  更新个人信息
 	userGroup := r.Group("/myspace")
 	{
+		userGroup.GET("/queryIsFollowed/", middleware.JWTAuth(), controller.QueryIsFollowed)
 		userGroup.GET("/getuserinfo/", middleware.JWTAuth(), controller.GetUserInfoByUserIDHandler) //根据user_id返回用户的个人信息
 		userGroup.POST("/updateuserinfo/", middleware.JWTAuth(), controller.UpdateUserInfoHandler)
 		userGroup.GET("/getuserposts/", middleware.JWTAuth(), controller.GetUserPostsHandler)
@@ -74,6 +75,16 @@ func SetupRouter() *gin.Engine {
 		sharePostGroup.POST("/uploadcomment/", controller.UploadComment)
 
 		sharePostGroup.POST("/changecollectStatus/", controller.ChangeCollectStatus)
+	}
+
+	//通知
+	notificationGroup := r.Group("/notification")
+	notificationGroup.Use(middleware.JWTAuth())
+	{
+		notificationGroup.POST("/post/", controller.PostNotification)
+		notificationGroup.GET("/get/", controller.GetNotifications)
+		notificationGroup.POST("/changenotificationstatus/", controller.ChangeNotificationStatus)
+		notificationGroup.GET("/getunreadnotificationcount/", controller.GetUnreadNotificationsCount)
 	}
 	return r
 }

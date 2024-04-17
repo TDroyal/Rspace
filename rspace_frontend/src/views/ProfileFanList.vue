@@ -1,16 +1,17 @@
 <template>
     <div class="card card-out" style="background-color:transparent; z-index: 3;">
         <div class="card-body" >
+            <!-- style="background-color: #F7F8FA;" -->
             <div class="card">
                 <div class="card-body">
                     <div class="row justify-content-center">
                         <div class="col-12">
-                            <div class="follow-title" >关注列表</div>
+                            <div class="fan-title" >粉丝列表</div>
                             <div class="horizontal-line"></div>
                         </div>
                     </div>
                     <br/>
-                    <div v-for="user in followerList.users" :key="user.id">
+                    <div v-for="user in fansList.users" :key="user.id">
                         <div class="card  user-list" @click="enterUserProfile(user.id)">
                             <div class="card-body" style="padding: 8px">
                                 <div class="row">
@@ -55,14 +56,14 @@
                         </a> -->
                         <div class="horizontal-line"></div>
                     </div>
-                    <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="followerList.total_count" class="mt-4" @change="changePage" :pager-count="5"/>
-                    <div v-if="followerList.total_count === 0">
+                    <el-pagination hide-on-single-page  style="justify-content: right; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="fansList.total_count" class="mt-4" @change="changePage" :pager-count="5"/>
+                    <div v-if="fansList.total_count === 0">
                         <el-empty description="没有数据" />
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div>  
 </template>
 
 <script>
@@ -71,13 +72,23 @@ import {BackendRootURL, FrontendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录 
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
-import { ref, reactive } from 'vue';
+// import { reactive, ref, watchEffect } from 'vue';
+import { reactive, ref, watch } from 'vue';
+// import { useRoute } from 'vue-router';
+
 export default {
-    name: "UserProfileFollowList",
+    name: "ProfileFanList",
     components:{},
-    setup() {        
+    props:{
+        is_followed:{
+            type:Boolean,
+            requried:true,
+        }
+    },
+    setup(props) {        
         const store = useStore()
-        const followerList = reactive({
+        // const route = useRoute()
+        const fansList = reactive({
             total_count:0,
             count:0,
             users:[],
@@ -93,7 +104,7 @@ export default {
                     user_id: router.currentRoute.value.params.userid,
                     page_size: page_size.value,
                     current_page: current_page.value,
-                    search_type: 1,
+                    search_type: 2,
                 },
                 headers:{
                     'Authorization': "Bearer " + store.state.user.jwt,
@@ -101,28 +112,89 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
-                        ElMessage.error("获取关注列表失败")
+                        ElMessage.error("获取粉丝列表失败")
                         return 
                     }
                     if (resp.data === null || resp.data.data === null) {
+                        fansList.count = 0
+                        fansList.users = []
+                        fansList.total_count = 0
                         return
                     }
-                    followerList.count = resp.data.data.length
-                    followerList.users = resp.data.data
-                    followerList.total_count = resp.data.count
-                    for(let i = 0; i < followerList.count; i ++ ) {
-                        followerList.users[i].avatar = BackendRootURL + "/static/avatar/" + followerList.users[i].avatar
+                    // console.log(resp.data)
+                    fansList.count = resp.data.data.length
+                    fansList.users = resp.data.data
+                    fansList.total_count = resp.data.count
+                    for(let i = 0; i < fansList.count; i ++ ) {
+                        fansList.users[i].avatar = BackendRootURL + "/static/avatar/" + fansList.users[i].avatar
                     }
                     
-                    // console.log(followerList)
+                    // console.log(fansList)
                 },
                 error() {
                     // console.log(resp)
-                    ElMessage.error("获取关注列表失败")
+                    ElMessage.error("获取粉丝列表失败")
                 }
             })
         }
         get_follower_info()
+        // console.log(fansList)
+
+        const is_followed = ref(null)
+        
+        // 重新写一个接口判断当前登录用户是否关注当前查看的用户
+        // const queryIsFollowed = ()=>{
+        //     $.ajax({
+        //         url: BackendRootURL + "/myspace/queryIsFollowed/",
+        //         type: "GET",
+        //         data: {
+        //             user_id: parseInt(route.params.userid),  //这个是当前查看的用户id
+        //         },
+        //         headers: {
+        //             'Authorization': "Bearer " + store.state.user.jwt,  //这个里面存入的是当前登录的用户id
+        //         },
+        //         success(resp) {
+        //             if (resp.status !== 0) {
+        //                 return;
+        //             }
+        //             is_followed.value = resp.data
+        //         },
+        //     });
+
+            
+                   
+        // }
+        // queryIsFollowed()
+
+        watch(
+            () => props.is_followed,  //监听props.is_followed是否发送变化即可
+            (newValue) => {
+                // console.log(22222222222);
+                is_followed.value = newValue;
+                if (is_followed.value === false) {
+                    // fansList.users = fansList.users.filter(user => user.id !== store.state.user.id);
+                    // fansList.count = fansList.users.length;
+
+                    //简单粗暴直接返回第一页信息
+                    current_page.value = 1
+                    get_follower_info()
+                } else {
+                let f = false;
+                for (let i = 0; i < fansList.count; i++) {
+                    if (fansList.users[i].id === store.state.user.id) {
+                        f = true;
+                        break;
+                    }
+                }
+                if (f === false) {  //把当前登录用户加进入
+                    //刷新当前页面就可以了
+                    get_follower_info();
+                }
+                }
+            },
+            { immediate: true }
+        );
+
         // 进入用户的个人空间
         const enterUserProfile = (user_id)=>{
             if(store.state.user.is_login) {
@@ -144,10 +216,11 @@ export default {
 
         const changePage = ()=>{
             get_follower_info()
-        }        
+        }
+        
 
         return {
-            followerList,
+            fansList,
             enterUserProfile,
             get_follower_info,
 
@@ -176,7 +249,7 @@ export default {
     border: none;
 }
 
-.follow-title{
+.fan-title{
     font-weight: bold;
 }
 

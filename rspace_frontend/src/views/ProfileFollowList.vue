@@ -73,7 +73,7 @@ import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
 import { ref, reactive } from 'vue';
 export default {
-    name: "UserProfileFollowList",
+    name: "ProfileFollowList",
     components:{},
     setup() {        
         const store = useStore()

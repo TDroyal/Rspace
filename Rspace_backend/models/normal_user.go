@@ -22,4 +22,10 @@ type NormalUser struct {
 	Followeds []Follow `gorm:"foreignKey:IsFollowedUserID;references:ID;"`
 	//一个用户有多个粉丝
 	Followers []Follow `gorm:"foreignKey:FollowedUserID;references:ID;"`
+
+	//强行多对多
+	//一个用户可以发起多个通知
+	GenerateNotifications []Notification `gorm:"foreignKey:GenerateUserID;references:ID;"`
+	//一个用户可以接收多个通知
+	ReceiveNotifications []Notification `gorm:"foreignKey:ReceiveUserID;references:ID;"`
 }

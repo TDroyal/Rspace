@@ -214,7 +214,7 @@ func UploadPostImageHandler(c *gin.Context) {
 			img_name := fmt.Sprintf("rspace_%d_%s", index, file.Filename)
 			images = append(images, img_name)
 			dst := fmt.Sprintf("./static/posts/%s", img_name)
-			fmt.Println("-----------------", file_size, dst)
+			// fmt.Println("-----------------", file_size, dst)
 			// 压缩图片
 			compressedImg := resize.Resize(800, 0, img, resize.Lanczos3)
 

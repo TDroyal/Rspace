@@ -22,11 +22,12 @@
                     </div>
                     <div class="row justify-content-center" style="margin-top: 10px;">
                         <div class="col-5 follow-list" @click="openfollowList('2')">
-                            <div class="text-center follow-title">关注了</div>
+                            <div class="text-center ">关注了</div>
                             <div class="text-center">{{userinfo.followercount}}</div>
-                        </div><span style="width: 10px; padding: 0px; color: gray; text-align: center;">|</span>
+                        </div>
+                        <span style="width: 10px; padding: 0px; color: gray; text-align: center;">|</span>
                         <div class="col-5 fans-list" @click="openfollowList('3')">
-                            <div class="text-center follow-title">关注者</div>
+                            <div class="text-center ">关注者</div>
                             <div class="text-center">{{userinfo.fanscount}}</div>
                         </div>
                     </div>
@@ -85,7 +86,7 @@ import router from '@/router/index';   //@定位src目录
 import { reactive } from 'vue';
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
-
+import { useRoute } from 'vue-router'
 export default {
     name:"UserProfileInfo",
     components:{},
@@ -104,6 +105,7 @@ export default {
         // console.log(context)
         // console.log(props)
         const store = useStore()
+        const route = useRoute()
         const gender_map = reactive({
             0:'',
             1:'男',
@@ -119,7 +121,7 @@ export default {
                 url: BackendRootURL + "/myspace/follow/",
                 type: "POST",
                 data: {
-                    user_id: props.userinfo.id,
+                    user_id: props.userinfo.id,  //被关注的用户id
                 },
                 headers: {
                     'Authorization': "Bearer " + store.state.user.jwt,
@@ -128,6 +130,21 @@ export default {
                     // console.log(resp)
                     if (resp.status === 0) {
                         context.emit('follow');  //调用父组件传过来的函数, 子组件向父组件传递数据可以通过自定义事件来实现，调用函数传参数
+                        //然后发送关注通知3
+                        $.ajax({
+                            url: BackendRootURL + "/notification/post/",  
+                            type:"POST",
+                            data:{
+                                generate_user_id: store.state.user.id,
+                                receive_user_id: props.userinfo.id,
+                                post_id:1,  //占位符，无用
+                                notification_type: 3, //3是关注通知
+                            },
+                            headers:{
+                                'Authorization': "Bearer " + store.state.user.jwt,
+                            },
+                            // 发送通知不需要得到反馈，失败了影响也不大。
+                        })
                     }
                 }
             });
@@ -153,6 +170,21 @@ export default {
 
         const openfollowList =(navCount)=>{
             context.emit('changeNavbar', navCount)
+            if(navCount === '2') {
+                router.push({
+                    name:"ProfileFollowList",
+                    params:{
+                        userid: parseInt(route.params.userid)
+                    }
+                })
+            }else if(navCount === '3') {
+                router.push({
+                    name:"ProfileFanList",
+                    params:{
+                        userid: parseInt(route.params.userid)
+                    }
+                })
+            }
         }
 
         return {
@@ -246,10 +278,21 @@ img {
 
 .follow-list {
     cursor: pointer;
+    color: gray;
+}
+
+.follow-list:hover {
+    color: #00A1D6;
 }
 
 .fans-list {
     cursor: pointer;
+    color: gray;
 }
+
+.fans-list:hover {
+    color: #00A1D6;
+}
+
 
 </style>

@@ -130,7 +130,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @change="change_page"/>
+                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @change="change_page" :pager-count="5"/>
                         </div>
                     </div>
                 </div>
@@ -466,6 +466,24 @@ export default {
                     comments.value[index] = ""
                     //渲染每个帖子对应的评论列表, 成功后。
                     get_comments_by_post_id(index, post_id)
+
+                    //然后发送评论通知1
+                    if(store.state.user.id != posts.posts[index].user_id) {
+                        $.ajax({
+                            url: BackendRootURL + "/notification/post/",   //初次评论：发送通知
+                            type:"POST",
+                            data:{
+                                generate_user_id:store.state.user.id,
+                                receive_user_id:posts.posts[index].user_id,
+                                post_id:post_id,
+                                notification_type: 1, //1是评论通知
+                            },
+                            headers:{
+                                'Authorization': "Bearer " + store.state.user.jwt,
+                            },
+                            // 发送通知不需要得到反馈，失败了影响也不大。
+                        })
+                    }
                 },
                 error(resp) {
                     ElMessage({
@@ -539,6 +557,7 @@ export default {
                         ElMessage.error("收藏失败，请稍后重试")
                         return 
                     }
+
                     //渲染每个帖子对应的评论列表, 成功后。
                     // ElMessage.success("收藏成功")
                     // 将当前帖子收藏数量+-1，不像后端请求，节约请求次数
@@ -549,6 +568,26 @@ export default {
                         iscollect.value[index] = true
                         posts.posts[index].iscollect_count += 1
                     }
+
+                    // 如果当前是未收藏（点击后会收藏，这时候就往后端传数据，）
+                    // 后端就判断数据库中之前有无这条通知，有就不插入，没有就插入
+                    if(iscollect.value[index] === true && store.state.user.id != posts.posts[index].user_id) {
+                        $.ajax({
+                            url: BackendRootURL + "/notification/post/",   //初次点赞：发送点赞的通知
+                            type:"POST",
+                            data:{
+                                generate_user_id:store.state.user.id,
+                                receive_user_id:posts.posts[index].user_id,
+                                post_id:post_id,
+                                notification_type: 2, //2是点赞通知
+                            },
+                            headers:{
+                                'Authorization': "Bearer " + store.state.user.jwt,
+                            },
+                            // 发送通知不需要得到反馈，失败了影响也不大。
+                        })
+                    }
+
                 },
                 error(resp) {
                     ElMessage({
@@ -558,7 +597,6 @@ export default {
                     console.log(resp)
                 }
             })
-
         }
 
         const get_iscollect_count_by_post_id = (index, post_id, user_id) => {  //不需要jwt认证

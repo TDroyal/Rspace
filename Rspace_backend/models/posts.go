@@ -16,4 +16,7 @@ type Post struct {
 	// 一个帖子有多个评论
 	//一个帖子有多个用户收藏
 	Collections []Collection `gorm:"foreignKey:PostID;references:ID"`
+
+	//一个帖子会与多个通知发生关联
+	Notifications []Notification `gorm:"foreignKey:PostID;references:ID"`
 }

@@ -18,6 +18,7 @@ const ModuleUser = {
         gender: "",
         fanscount:0,
         followercount:0,
+        unread_notification_count:0,  //未读的通知数量
         is_login: false,
     },
     mutations: {     //更新state里面的数据
@@ -34,12 +35,22 @@ const ModuleUser = {
             state.gender = user.gender
             state.fanscount = user.fanscount
             state.followercount = user.followercount
+            state.unread_notification_count = user.unread_notification_count
             state.is_login = user.is_login;
             let uu = {
                 user:state
             }
             localStorage.setItem("userStore", JSON.stringify(uu))
             // console.log("updateUser", uu)
+        },
+
+        // 更新未读的通知数量
+        updateUnreadNotificationCount(state, unread_notification_count_) {
+            state.unread_notification_count = unread_notification_count_
+            let uu = {
+                user:state
+            }
+            localStorage.setItem("userStore", JSON.stringify(uu))
         },
 
         updateJwt(state, jwt) {
@@ -75,6 +86,7 @@ const ModuleUser = {
             state.gender = ""
             state.fanscount = 0
             state.followercount = 0
+            state.unread_notification_count = 0
             state.is_login = false;
 
             window.localStorage.removeItem("userStore")
@@ -154,7 +166,7 @@ const ModuleUser = {
                             // if (resp.data.gender === 2) {
                             //     gender = "女"
                             // }
-
+                            // console.log(resp.data)
                             context.commit("updateUser", {  //传入mutations中的方法名称和参数data
                                 id: resp.data.normal_userinfo.id,
                                 username: resp.data.normal_userinfo.name,
@@ -168,6 +180,7 @@ const ModuleUser = {
                                 is_login: true,
                                 fanscount:resp.data.fanscount,
                                 followercount:resp.data.fanscount,
+                                unread_notification_count:resp.data.unreadnotificationcount,
                             });
                             ElMessage({
                                 message: '登录成功',

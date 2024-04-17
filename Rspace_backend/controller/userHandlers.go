@@ -87,10 +87,11 @@ func LoginHandler(c *gin.Context) {
 }
 
 type Userinfo struct {
-	NormalUserinfo models.NormalUser `form:"normal_userinfo" json:"normal_userinfo" xml:"normal_userinfo"`
-	IsFollowed     bool              `form:"is_followed" json:"is_followed" xml:"is_followed"`
-	FansCount      int64             `form:"fanscount" json:"fanscount" xml:"fanscount"`
-	FollowerCount  int64             `form:"followercount" json:"followercount" xml:"followercount"`
+	NormalUserinfo          models.NormalUser `form:"normal_userinfo" json:"normal_userinfo" xml:"normal_userinfo"`
+	IsFollowed              bool              `form:"is_followed" json:"is_followed" xml:"is_followed"`
+	FansCount               int64             `form:"fanscount" json:"fanscount" xml:"fanscount"`
+	FollowerCount           int64             `form:"followercount" json:"followercount" xml:"followercount"`
+	UnreadNotificationCount int64             `form:"unreadnotificationcount" json:"unreadnotificationcount" xml:"unreadnotificationcount"`
 }
 
 func GetUserInfoByUserIDHandler(c *gin.Context) {
@@ -124,6 +125,18 @@ func GetUserInfoByUserIDHandler(c *gin.Context) {
 	if err := dao.DB.Model(&models.Follow{}).Where("followed_user_id = ? AND status = ?", user_id, 1).Count(&user_info.FollowerCount).Error; err != nil {
 		panic(err)
 	}
+
+	//未读通知数量
+	var count1, count2 int64
+	if err := dao.DB.Model(&models.Notification{}).Where("receive_user_id = ? and notification_status = 1 and notification_type = 3", me_id).
+		Count(&count1).Error; err != nil {
+		panic(err)
+	}
+	if err := dao.DB.Model(&models.Notification{}).Where("receive_user_id = ? and notification_status = 1 and notification_type in (1, 2)", me_id).
+		InnerJoins("join posts on posts.id = notifications.post_id and posts.deleted_at is null").Count(&count2).Error; err != nil {
+		panic(err)
+	}
+	user_info.UnreadNotificationCount = count1 + count2
 	//查找是me_id是否是user_id的粉丝
 	var count int64
 	if err := dao.DB.Model(&models.Follow{}).Where("isfollowed_user_id = ? AND followed_user_id = ? AND status = ?", user_id, me_id, 1).Count(&count).Error; err != nil {
@@ -153,6 +166,28 @@ func GetUserInfoByUserIDHandler(c *gin.Context) {
 	// 	"message": "token is null",
 	// 	"data":    nil,
 	// })
+}
+
+// 询问是否关注此用户
+func QueryIsFollowed(c *gin.Context) {
+	// 得到中间件jwt认证的claims
+	claims := c.MustGet("claims").(*middleware.Myclaims)
+	//登录的用户id
+	me_id := claims.ID
+	// fmt.Print(me_id)
+	//当前查看的用户id
+	user_id := c.Query("user_id")
+	//查找是me_id是否是user_id的粉丝
+	var count int64
+	if err := dao.DB.Model(&models.Follow{}).Where("isfollowed_user_id = ? AND followed_user_id = ? AND status = ?", user_id, me_id, 1).Count(&count).Error; err != nil {
+		panic(err)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  0, //0表示成功
+		"message": "get follow_info ok",
+		"data":    count,
+	})
+
 }
 
 // 绑定修改的用户信息
@@ -324,7 +359,7 @@ func ChangeFollowStatus(c *gin.Context) {
 	}
 	user_id := user.UserID
 
-	fmt.Printf("%#v-----%#v-----\n", user_id, me_id)
+	// fmt.Printf("%#v-----%#v-----\n", user_id, me_id)
 
 	//先查数据库，有没有此条记录，如果没有肯定是关注
 	var follow models.Follow
@@ -514,7 +549,7 @@ func GetStarPostINfo(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(count, starpost_info)
+	// fmt.Println(count, starpost_info)
 	c.JSON(http.StatusOK, gin.H{
 		"status":  0,
 		"message": "get starpostlist success",
