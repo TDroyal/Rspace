@@ -1,5 +1,5 @@
 <template>
-    <Content v-infinite-scroll="load"  :infinite-scroll-disabled="disabled">
+    <Content>
         <div class="row justify-content-center" >
             <div class="col-md-9 col-12">
                 <div v-for="(post, index) in posts.posts" :key="post.ID" >
@@ -130,23 +130,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="index === posts.count - 1">
-                                <!-- <p class="load-status" v-if="loading">加载中...</p> -->
-                                <div class="load-status" v-if="loading">
-                                    <div class="d-flex justify-content-center">
-                                        <div class="spinner-border" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="load-status" v-if="noMore">没有更多信息</p>
-                            </div>
-                            <!-- <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @change="change_page" :pager-count="5"/> -->
+                            <el-pagination hide-on-single-page v-if="index === posts.count - 1" style="justify-content: center; " :page-size="page_size" v-model:current-page="current_page" large background layout="prev, pager, next" :total="total_count" class="mt-4" @change="change_page" :pager-count="5"/>
                         </div>
                     </div>
                 </div>
                 <!-- <el-pagination style="justify-content: center;" large background layout="prev, pager, next" :total="50" class="mt-4"/> -->
-                
             </div>
         </div>
 
@@ -167,9 +155,9 @@
 <script>
 import Content from '../components/Content.vue'
 import { useStore } from 'vuex'
-import { ref, reactive, computed} from 'vue'
+import { ref, reactive, watch} from 'vue'
 import $ from 'jquery'
-import { ElMessage, } from 'element-plus'
+import { ElMessage, ElLoading} from 'element-plus'
 import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
 // import prefix from '../utils/ParseImageUrl'
@@ -189,38 +177,30 @@ export default {
             '3':'笔记',
             '4':'其它'
         })
-        
+        // const user = reactive({
+        //     ...store.state.user
+        // })
         const posts = reactive({
             count:0,
             posts:[],
         })
-
-        //单次的帖子列表
-        const get_posts = reactive({
-            count: 0,
-            posts:[],
-        })
-
         // const route = useRoute();
         // 每一页的大小，以及当前所在页面。
         const page_size = ref(5)
         // let query_page = parseInt(route.query.page);  //当前打开这个用户的id，从url上获取
         // const current_page = ref(query_page || 1)
-        const current_page = ref(1)
+        const current_page = ref(store.state.pagination.home_current_page || 1)
         const total_count = ref(0)  //总的作品数量
 
-        const loading = ref(false)
-        let noMore = computed(() => posts.count >= total_count.value)
-        const disabled = computed(() => loading.value || noMore.value)
 
         // 从数据库中读取最新的5条博客进行展示，返回的信息有哪些要仔细考虑
         const getPostsInfo = ()=>{
             // console.log("调用getPostInfo")
-            // const loading = ElLoading.service({
-            //     lock: true,
-            //     text: '加载中',
-            //     background: 'rgba(0, 0, 0, 0.7)',
-            // })
+            const loading = ElLoading.service({
+                lock: true,
+                text: '加载中',
+                background: 'rgba(0, 0, 0, 0.7)',
+            })
             $.ajax({
                 url: BackendRootURL + "/homepost/getposts/",
                 type:"GET",
@@ -237,59 +217,45 @@ export default {
                         })
                         return 
                     }
-                    // console.log("多少页的数据：",current_page.value, resp.data)
+                    // console.log(resp.data)
                     total_count.value = resp.data.count
-                    get_posts.posts = resp.data.data
-                    if(get_posts.posts !== null) {
-                        get_posts.count = get_posts.posts.length
+                    posts.posts = resp.data.data
+                    if(posts.posts !== null) {
+                        posts.count = posts.posts.length
+                    }else if(posts.posts === null || posts.count === 0){
+                        if(total_count.value !== null || total_count.value > 0) {
+                            current_page.value --  
+                            // console.log("调用change_page-----------")
+                            change_page()
+                            return 
+                        }
                     }
-                    // else if(get_posts.posts === null || get_posts.count === 0){
-                    //     if(total_count.value !== null || total_count.value > 0) {
-                    //         current_page.value --  
-                    //         // console.log("调用change_page-----------")
-                    //         change_page()
-                    //         return 
-                    //     }
-                    // }
 
                     // console.log(posts)
                     // 遍历每个posts的Image，对其进行分割并拼接，组成一个数组
-                    for(let i = 0; i < get_posts.count; i ++ ) {
-                        let post = get_posts.posts[i]
+                    for(let i = 0; i < posts.count; i ++ ) {
+                        let post = posts.posts[i]
                         let imgstr = post.image
                         // console.log(post)
                         // console.log(imageurl)
-                        get_posts.posts[i].image = ParseImageUrl(imgstr)
-                        get_posts.posts[i].CreatedAt = GetTimePeriod(FormatDateTime(get_posts.posts[i].CreatedAt))
-                        get_posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + get_posts.posts[i].avatar
-                        get_posts.posts[i].type = post.type
-                        get_posts.posts[i].comments = {
+                        posts.posts[i].image = ParseImageUrl(imgstr)
+                        posts.posts[i].CreatedAt = GetTimePeriod(FormatDateTime(posts.posts[i].CreatedAt))
+                        posts.posts[i].avatar = BackendRootURL + "/static/avatar/" + posts.posts[i].avatar
+                        posts.posts[i].type = post.type
+                        posts.posts[i].comments = {
                             count:0,
                             comments:[],
                         }
-                        get_posts.posts[i].iscollect_count = 0    // 每个作品被收藏（点赞）的数量
-                        posts.posts.push(get_posts.posts[i])
+                        posts.posts[i].iscollect_count = 0    // 每个作品被收藏（点赞）的数量
                     }
                     // console.log(posts)
                     
-                    for(let index = 0 + posts.count; index < get_posts.count + posts.count; index ++ ) {
+                    for(let index = 0; index < posts.count; index ++ ) {
                         // 再获取当前每个post的评论数
                         get_comments_by_post_id(index, posts.posts[index].ID)
                         // 获得当前每个post的点赞数，以及每个帖子是否被当前用户收藏
                         get_iscollect_count_by_post_id(index, posts.posts[index].ID, store.state.user.id)
                     }
-                    
-                    posts.count += get_posts.count
-                    
-                    // console.log("---", posts.posts)
-                    loading.value = false
-                    current_page.value += 1
-
-                    noMore = computed(() => posts.count >= total_count.value)
-                    if(noMore.value === true) {
-                        loading.value = false
-                    }
-                    
                 },
                 error(resp) {
                     ElMessage({
@@ -299,47 +265,47 @@ export default {
                     console.log(resp)
                 },
             })
-            // loading.close()
+            loading.close()
         }
         // console.log("直接调用getPostsInfo")
         getPostsInfo()
         // console.log(11111111111111)
         //切换分页时，router跳转
-        // const change_page = ()=>{
-        //     // console.log("change_page")
-        //     router.push({
-        //         name:"Home",
-        //         query:{
-        //             page: current_page.value,
-        //         },
-        //     })
-        //     getPostsInfo()
+        const change_page = ()=>{
+            // console.log("change_page")
+            router.push({
+                name:"Home",
+                query:{
+                    page: current_page.value,
+                },
+            })
+            getPostsInfo()
             
-        //     // 把当前首页的帖子current_page存入vuex
-        //     store.commit("updateHomeCurrentPage", current_page.value)
-        //     return 
-        // }
+            // 把当前首页的帖子current_page存入vuex
+            store.commit("updateHomeCurrentPage", current_page.value)
+            return 
+        }
            
-        // watch(() => router.currentRoute.value.query, (query) => {  //监听路由发送变化
-        //     // console.log("watch", query.page)  //从一个新的路由过来，它就为空
+        watch(() => router.currentRoute.value.query, (query) => {  //监听路由发送变化
+            // console.log("watch", query.page)  //从一个新的路由过来，它就为空
             
 
-        //     current_page.value = parseInt(query.page) || store.state.pagination.home_current_page || 1
-        //     // console.log()
-        //     if(current_page.value === store.state.pagination.home_current_page) {
-        //         router.push({
-        //             name:"Home",
-        //             query:{
-        //                 page: current_page.value,
-        //             },
-        //         })
-        //         return
-        //     }
-        //     // console.log("调用change_page  dsdadsad")
-        //     change_page()
+            current_page.value = parseInt(query.page) || store.state.pagination.home_current_page || 1
+            // console.log()
+            if(current_page.value === store.state.pagination.home_current_page) {
+                router.push({
+                    name:"Home",
+                    query:{
+                        page: current_page.value,
+                    },
+                })
+                return
+            }
+            // console.log("调用change_page  dsdadsad")
+            change_page()
            
-        //     // getPostsInfo()
-        // }, { immediate:true }); // immediate: true 表示在组件初始化时立即执行
+            // getPostsInfo()
+        }, { immediate:true }); // immediate: true 表示在组件初始化时立即执行
 
         // 点击放大图片和关闭功能
         const showModal = ref(false);
@@ -670,11 +636,6 @@ export default {
             })
         }
 
-        const load = ()=>{
-            loading.value = true
-            getPostsInfo()
-        }
-
         return {
             posts,
             comments,
@@ -703,11 +664,7 @@ export default {
             current_page,
             total_count,
             getPostsInfo,
-            // change_page,
-            load,
-            loading,
-            noMore,
-            disabled,
+            change_page,
         }
     }
 }
@@ -869,14 +826,6 @@ svg {
     object-fit: contain; 
     width: 95%; 
     height: 85%;
-}
-
-.load-status {
-    color: #99A2AA;
-    justify-content: center;
-    text-align: center;
-    margin-top: 16px;
-    margin-bottom: 0px;
 }
 
 </style>

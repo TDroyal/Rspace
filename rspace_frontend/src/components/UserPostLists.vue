@@ -188,8 +188,8 @@ export default {
         };
 
 
-         // 进入帖子详情页面
-         const enterPostDetail = (post_id)=> {
+        // 进入帖子详情页面
+        const enterPostDetail = (post_id)=> {
             router.push({
                 name:"PostDetail",
                 params:{

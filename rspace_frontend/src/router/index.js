@@ -17,28 +17,29 @@ import ProfilePostLists from '../views/ProfilePostLists.vue'
 import ProfileStar from '../views/ProfileStar.vue'
 import ProfileFollowList from '../views/ProfileFollowList.vue'
 import ProfileFanList from '../views/ProfileFanList.vue'
+import Search from '../views/Search.vue'
 
 const routes = [
-  // {
-  //   path: '/',
-  //   name: 'Home',
-  //   component: Home
-  // },
   {
     path: '/',
     name: 'Home',
-    component: Home,
-    beforeEnter: (to, from, next) => {
-      const currentPage = to.query.page || 1;
-      // console.log(currentPage)
-      if (currentPage === 1) {
-        // next({path: '/'}); // 在第一页时继续导航到组件
-        next();
-      } else {
-        next({ path: `/?page=${currentPage}` }); // 在其他页时重定向到新路径
-      }
-    }
+    component: Home
   },
+  // {
+  //   path: '/',
+  //   name: 'Home',
+  //   component: Home,
+  //   beforeEnter: (to, from, next) => {
+  //     const currentPage = to.query.page || 1;
+  //     // console.log(currentPage)
+  //     if (currentPage === 1) {
+  //       // next({path: '/'}); // 在第一页时继续导航到组件
+  //       next();
+  //     } else {
+  //       next({ path: `/?page=${currentPage}` }); // 在其他页时重定向到新路径
+  //     }
+  //   }
+  // },
   {
     path: '/login/',
     name: 'Login',
@@ -49,7 +50,7 @@ const routes = [
     component: Login
   },
   {
-    path: '/profile/:userid/',
+    path: '/profile/:userid/',    // 当您在路由配置中使用 : 后跟一个名称时，这个部分将被视为动态参数，可以匹配 URL 中的不同值。
     name: 'Profile',
     component: Profile,
     redirect: to => {
@@ -117,6 +118,11 @@ const routes = [
     path:'/notifications/',
     name:"Notifications",
     component:Notifications,
+  },
+  {
+    path:'/search/',
+    name:"Search",
+    component:Search,
   },
 ]
 

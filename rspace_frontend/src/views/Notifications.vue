@@ -3,7 +3,7 @@
     <Content>
         <div class="row justify-content-center" >
             <div class="col-md-9 col-12">
-                <div class="card">
+                <div class="card card-out">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-12">
@@ -258,6 +258,10 @@ export default {
     
 }
 
+.card-out {
+    margin-top: 20px;
+    border: none;
+}
 
 .horizontal-line {
   border-bottom: 1px solid lightgray;

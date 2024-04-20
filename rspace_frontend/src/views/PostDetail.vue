@@ -250,7 +250,7 @@ export default {
                 ElMessage.error("获取帖子信息失败")
             },
         })
-        loading.close()
+        // loading.close()
         // 还需要获得帖子的评论和点赞信息，封装为函数，每次点击删除评论或者提交评论就再请求一次评论信息。
         
 
@@ -321,7 +321,7 @@ export default {
             })
         }
         get_comments_by_post_id(router.currentRoute.value.params.postid)
-
+        loading.close()
         // 评论提交
         const postAComment = (post_id)=>{
             if(store.state.user.is_login === false) {
@@ -332,8 +332,8 @@ export default {
                 return 
             }
             // 登录的用户就可以存评论了
-
-            if(comments.value === '') {
+            
+            if(comments.value === '' || /^\s*$/.test(comments.value)) {
                 ElMessage({
                     message: '评论不能为空',
                     type: 'warning',

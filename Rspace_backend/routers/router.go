@@ -86,5 +86,13 @@ func SetupRouter() *gin.Engine {
 		notificationGroup.POST("/changenotificationstatus/", controller.ChangeNotificationStatus)
 		notificationGroup.GET("/getunreadnotificationcount/", controller.GetUnreadNotificationsCount)
 	}
+
+	//搜索
+	searchGroup := r.Group("/search")
+	{
+		searchGroup.GET("/getpost/", controller.GetPostList)
+		searchGroup.GET("/getuser/", controller.GetUserList)
+	}
+
 	return r
 }
