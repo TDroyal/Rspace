@@ -57,6 +57,13 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-container">
+            <div class="row justify-content-center">
+                <div class="col-md-7 col-12">
+                    <CopyRight></CopyRight>
+                </div>
+            </div>
+        </div>
     </Content>
 </template>
 
@@ -69,9 +76,10 @@ import {ref} from 'vue'
 // import { ElMessage } from 'element-plus';
 import router from '@/router/index';   //@定位src目录
 import { ElMessage } from 'element-plus';
+import CopyRight from '../components/CopyRight.vue'
 export default {
     name: "Login",
-    components: { Content, BottomTips},
+    components: { Content, BottomTips, CopyRight},
 
     setup() {
         const store = useStore()
@@ -216,5 +224,12 @@ input {
     color: rgb(19, 18, 18);
 }
 
+.bottom-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
+}
 
 </style>

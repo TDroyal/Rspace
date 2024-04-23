@@ -98,6 +98,7 @@
                         <p class="load-status" v-if="noMore">没有更多搜索结果</p>
                     </div>
                 </div>
+                <CopyRight></CopyRight>
             </div>
         </div>
     </Content>
@@ -113,9 +114,10 @@ import { BackendRootURL } from '../common_resources/resource'
 import { ElMessage,} from 'element-plus'
 import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
+import CopyRight from '../components/CopyRight.vue'
 export default {
     name:"Search",
-    components:{Content},
+    components:{Content, CopyRight},
     setup()
     {
         // 假设 URL 为 /search/?query_content=royal_111      ? 后面的内容被解析为查询参数。

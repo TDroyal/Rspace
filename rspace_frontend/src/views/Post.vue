@@ -104,6 +104,7 @@
                         </div>
                     </div>
                 </div>
+                <CopyRight></CopyRight>
             </div>
         </div>
     </Content>
@@ -111,6 +112,7 @@
 
 <script>
 import Content from '../components/Content.vue'
+import CopyRight from '../components/CopyRight.vue'
 import { reactive, ref, computed } from 'vue'
 import { useStore} from 'vuex'
 import { ElMessage, ElLoading} from 'element-plus' // 
@@ -120,7 +122,7 @@ import {BackendRootURL} from '../common_resources/resource';
 
 export default {
     name: "Post",
-    components:{Content},
+    components:{Content, CopyRight},
 
     setup() {
 

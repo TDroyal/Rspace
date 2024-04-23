@@ -106,6 +106,13 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-container">
+            <div class="row justify-content-center">
+                <div class="col-md-7 col-12">
+                    <CopyRight></CopyRight>
+                </div>
+            </div>
+        </div>
     </Content>
 </template>
 
@@ -121,9 +128,10 @@ import BottomTips from '../components/BottomTips.vue'
 import {useStore} from 'vuex'
 import router from '@/router/index';   //@定位src目录
 import { jwtDecode } from 'jwt-decode'   //看官网才是最正确的选择
+import CopyRight from '../components/CopyRight.vue';
 export default{
     name:"Register",
-    components:{Content, BottomTips},
+    components:{Content, BottomTips, CopyRight},
     setup(){
         const store = useStore()
         const email_str = ref('')
@@ -411,4 +419,13 @@ button{
 .nav-button:hover {
     color: rgb(19, 18, 18);
 }
+
+.bottom-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
+}
+
 </style>

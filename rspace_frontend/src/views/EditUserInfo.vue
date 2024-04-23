@@ -83,12 +83,21 @@
                 
             </div>
         </div>
+        <CopyRight></CopyRight>
+        <!-- <div class="bottom-container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-12">
+                    <CopyRight></CopyRight>
+                </div>
+            </div>
+        </div> -->
     </Content>
 </template>
 
 <script>
 import { reactive, ref } from 'vue';
 import Content from '../components/Content.vue'
+import CopyRight from '../components/CopyRight.vue'
 import {useStore} from 'vuex'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
@@ -96,7 +105,7 @@ import {BackendRootURL} from '../common_resources/resource';
 import router from '@/router/index';   //@定位src目录
 export default {
     name:"EditUserInfo",
-    components:{Content},
+    components:{Content, CopyRight},
     setup(){
         const store = useStore()
         const check_is_login = ()=>{
@@ -385,5 +394,14 @@ svg {
 .my-avatar:hover + .avatar-text {
     display: block;
 }
+
+.bottom-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
+}
+
 
 </style>

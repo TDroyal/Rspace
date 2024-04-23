@@ -20,6 +20,7 @@
                 <UserProfileFansList :is_followed="user.is_followed" v-if="navSelected === '3'"></UserProfileFansList> -->
             </div>
         </div>
+        <CopyRight></CopyRight>
     </Content>
 </template>
 
@@ -29,6 +30,7 @@ import { useStore } from 'vuex'
 import { useRoute } from 'vue-router';
 import router from '@/router/index';   //@定位src目录
 import Content from '../components/Content.vue'
+import CopyRight from '../components/CopyRight.vue';
 import UserProfileInfo from '../components/UserProfileInfo.vue'
 // import UserPostLists from '../components/UserPostLists.vue'
 import $ from 'jquery'
@@ -44,7 +46,7 @@ import {BackendRootURL} from '../common_resources/resource';
 export default {
     name: "Profile",
     // ,UserProfileStar, UserProfileFansList, UserProfileFollowList, UserPostLists,
-    components: {Content,UserProfileInfo,UserProfileNavbar},
+    components: {Content,UserProfileInfo,UserProfileNavbar, CopyRight},
     setup() {
         const store = useStore()
         // store.commit('updateUserPostlistPage', 1)

@@ -166,7 +166,7 @@
                 </div>
             </div>
         </div>
-
+        <CopyRight></CopyRight>
         <!-- 模态框 -->
         <div class="modal" :class="{ 'show': showModal }" v-if="modalImage" @click="closeModal">
             <!-- <div class="modal-dialog modal-dialog-centered">
@@ -183,6 +183,7 @@
 
 <script>
 import Content from '../components/Content.vue'
+import CopyRight from '../components/CopyRight.vue'
 import router from '@/router/index';   //@定位src目录 
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
@@ -194,7 +195,7 @@ import ParseImageUrl from '../utils/ParseImageUrl'
 // 这个界面应该有(如果这个帖子是当前登录用户的那么)编辑帖子按钮（进入一个新的页面编辑帖子/updatepost/:postid）和删除帖子按钮
 export default {
     name:"PostDetail",
-    components:{Content},
+    components:{Content, CopyRight},
     setup()
     {
         //读取路由上的post_id，然后通过post_id读取post的信息。

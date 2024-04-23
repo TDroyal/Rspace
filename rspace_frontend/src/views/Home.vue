@@ -146,7 +146,7 @@
                     </div>
                 </div>
                 <!-- <el-pagination style="justify-content: center;" large background layout="prev, pager, next" :total="50" class="mt-4"/> -->
-                
+                <CopyRight></CopyRight>
             </div>
         </div>
 
@@ -176,9 +176,10 @@ import ParseImageUrl from '../utils/ParseImageUrl'
 import router from '@/router/index';   //@定位src目录
 import {BackendRootURL} from '../common_resources/resource';
 // import { useRoute } from 'vue-router';
+import CopyRight from '../components/CopyRight.vue'
 export default {
     name:"Home",
-    components: { Content },
+    components: { Content, CopyRight},
 
     setup()
     {

@@ -56,8 +56,10 @@
                         </div>
                     </div>
                 </div>
+                <CopyRight></CopyRight>
             </div>
         </div>
+        
     </Content>
 </template>
 
@@ -70,10 +72,11 @@ import {  BackendRootURL } from '../common_resources/resource';
 import $ from 'jquery'
 import { ElMessage } from 'element-plus';
 import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
+import CopyRight from '../components/CopyRight.vue'
 
 export default {
     name:"Notifications",
-    components:{Content},
+    components:{Content, CopyRight},
     setup() {
         const store = useStore()
         const check_is_login = ()=>{

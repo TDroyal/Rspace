@@ -76,6 +76,13 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-container">
+            <div class="row justify-content-center">
+                <div class="col-md-7 col-12">
+                    <CopyRight></CopyRight>
+                </div>
+            </div>
+        </div>
     </Content>
 </template>
 
@@ -83,6 +90,7 @@
 import { ref, reactive } from 'vue'
 import Content from '../components/Content.vue'
 import BottomTips from '../components/BottomTips.vue'
+import CopyRight from '../components/CopyRight.vue'
 import { BackendRootURL } from '../common_resources/resource'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus';
@@ -90,7 +98,7 @@ import router from '@/router/index';   //@定位src目录
 import { useStore } from 'vuex';
 export default{
     name:"LoginWithEmail",
-    components:{Content, BottomTips},
+    components:{Content, BottomTips, CopyRight},
     setup(){
         const store = useStore()
         const email_str = ref('')
@@ -297,5 +305,13 @@ button{
 
 .nav-button:hover {
     color: rgb(19, 18, 18);
+}
+
+.bottom-container {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 20px;
 }
 </style>

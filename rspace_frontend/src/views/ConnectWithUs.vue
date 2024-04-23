@@ -24,14 +24,24 @@
                 </div>
             </div>
         </div>
+        <div class="bottom-container">
+            <div class="row justify-content-center">
+                <div class="col-md-7 col-12">
+                    <CopyRight></CopyRight>
+                </div>
+            </div>
+        </div>
     </Content>
 </template>
 
 <script>
 import Content from '../components/Content.vue'
+
+import CopyRight from '../components/CopyRight.vue';
+import BottomTips from '../components/BottomTips.vue'
 export default{
     name:"ConnectWithUs",
-    components:{Content},
+    components:{Content, CopyRight, BottomTips},
     setup(){
 
     }
@@ -80,5 +90,14 @@ img {
     text-align: center;
     color: rgb(83, 78, 78);
 }
+
+.bottom-container {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 20px;
+}
+
 
 </style>
