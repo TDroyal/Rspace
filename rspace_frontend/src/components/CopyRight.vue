@@ -2,9 +2,9 @@
     <div class="horizontal-line"></div>
     <div class="row row-font">
         <div class="col-md-10 col-12 copyright">
-            © 2024-2024 Rspace 版权所有 &nbsp; | &nbsp; 
+            © {{startYear}}-{{currentYear}} Rspace 版权所有 &nbsp; | &nbsp; 
             <span>
-                <a href="http://beian.miit.gov.cn/publish/query/indexFirst.action" target="_black">蜀ICP备2024072244号</a>
+                <a href="http://beian.miit.gov.cn/" target="_black">蜀ICP备2024072244号</a>
             </span>
         </div>
         <div class="col-md-2 col-12 connection">
@@ -14,17 +14,23 @@
             </span>
         </div>
     </div>
-    
 </template>
 
 
 <script>
+import {ref} from 'vue'
 
 export default{
     name:"CopyRight",
     components:{},
     setup(){
+        const startYear = ref(2024)
+        const currentYear = ref(new Date().getFullYear())  //获取年份
 
+        return {
+            startYear,
+            currentYear,
+        }
     },
 }
 </script>

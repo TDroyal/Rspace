@@ -92,7 +92,7 @@ func GenerateToken(c *gin.Context, logininfo LoginInfo, user_id uint) { //用户
 		"refresh_jwt",
 		jwtgo.StandardClaims{
 			NotBefore: int64(time.Now().Unix() - 1000),   // 签名生效时间
-			ExpiresAt: int64(time.Now().Unix() + 604800), // 签名过期时间  一周
+			ExpiresAt: int64(time.Now().Unix() + 604800), // 签名过期时间  一周  604800
 			Issuer:    "royal_111",                       // 签名颁发者
 		},
 	}
@@ -266,9 +266,9 @@ func JWTAuth() gin.HandlerFunc {
 		// fmt.Println("*************", token)
 		if token == "" {
 			c.JSON(http.StatusOK, gin.H{
-				"status": -1,
-				"msg":    "token为空, 请携带token",
-				"data":   nil,
+				"status":  -1,
+				"message": "token为空, 请携带token",
+				"data":    nil,
 			})
 			c.Abort()
 			return
@@ -281,21 +281,21 @@ func JWTAuth() gin.HandlerFunc {
 
 		claims, err := j.ParserToken(token)
 		if err != nil {
-			// token过期
+			// token过期  ErrTokenExpired
 			if err == ErrTokenExpired {
 				c.JSON(http.StatusOK, gin.H{
-					"status": -1,
-					"msg":    "token授权已过期, 请重新申请授权",
-					"data":   nil,
+					"status":  401,
+					"message": "token授权已过期, 请重新申请授权",
+					"data":    nil,
 				})
 				c.Abort()
 				return
 			}
 			// 其他错误
 			c.JSON(http.StatusOK, gin.H{
-				"status": -1,
-				"msg":    err.Error(),
-				"data":   nil,
+				"status":  -1,
+				"message": err.Error(),
+				"data":    nil,
 			})
 			c.Abort()
 			return

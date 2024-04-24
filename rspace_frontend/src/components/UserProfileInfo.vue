@@ -87,6 +87,7 @@ import { reactive } from 'vue';
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
 import { useRoute } from 'vue-router'
+import { RefreshToken } from '../utils/MakeAuthenticatedRequest';
 export default {
     name:"UserProfileInfo",
     components:{},
@@ -145,6 +146,18 @@ export default {
                             },
                             // 发送通知不需要得到反馈，失败了影响也不大。
                         })
+                    }else{
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    follow(); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                        }
                     }
                 }
             });
@@ -163,6 +176,18 @@ export default {
                 success(resp) {
                     if (resp.status === 0) {
                         context.emit('unfollow');
+                    }else{
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    unfollow(); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                        }
                     }
                 }
             });

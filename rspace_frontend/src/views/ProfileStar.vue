@@ -106,6 +106,7 @@ import { useStore } from 'vuex';
 import { ref, reactive } from 'vue';
 import {FormatDateTime} from '../utils/DateTime'
 import { useRoute } from 'vue-router';
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 export default {
     name: "ProfileStar",
     components:{},
@@ -142,6 +143,18 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    getStarPostlist(); // 在RefreshToken完成后再调用
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
                         ElMessage.error("获取收藏列表失败，请稍后重试")
                         return 
                     }
@@ -167,7 +180,7 @@ export default {
                 }
             })
         }
-        getStarPostlist()
+        
 
         // 进入用户的个人空间 (后续改为用新窗口打开)
         const enterUserProfile = (user_id)=>{
@@ -219,7 +232,20 @@ export default {
                     'Authorization': "Bearer " + store.state.user.jwt,
                 },
                 success(resp) {
+                    // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    changeCollectStatusForAPost(post_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
                         ElMessage.error("取消收藏失败")
                         return 
                     }
@@ -237,6 +263,15 @@ export default {
                 }
             })
         }
+
+        
+        (async () => {
+            if (await CheckIsLogin(store) === false) {
+                return;
+            }
+            getStarPostlist()
+        })();
+
 
         const changePage = ()=>{
             getStarPostlist()

@@ -160,6 +160,7 @@ import { ElMessage } from 'element-plus';
 import {ref} from 'vue'
 import {BackendRootURL,} from '../common_resources/resource';
 import $ from 'jquery'
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 export default{
     name:"Navbar",
     setup(){
@@ -218,6 +219,17 @@ export default{
                     'Authorization': "Bearer " + store.state.user.jwt,
                 },
                 success(resp){
+                    if(resp.status === 401) {
+                        RefreshToken(store)
+                        .then((jwt) => {
+                            if(jwt) {
+                                getUnreadNotificationsCount(); // 在RefreshToken完成后再调用getUnreadNotificationsCount
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                    }
                     // notifications_count.value = resp.data
                     store.commit("updateUnreadNotificationCount", resp.data)
                 }
@@ -225,12 +237,12 @@ export default{
         }
 
         // 未登录不能获取未读通知数量
-        if(store.state.user.is_login === true) {
+        (async () => {
+            if (await CheckIsLogin(store) === false) {
+                return;
+            }
             getUnreadNotificationsCount()
-        }
-        
-
-
+        })();
 
         return {
             search_key_word,

@@ -75,6 +75,7 @@ import { useStore } from 'vuex';
 // import { reactive, ref, watchEffect } from 'vue';
 import { reactive, ref, watch } from 'vue';
 // import { useRoute } from 'vue-router';
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 
 export default {
     name: "ProfileFanList",
@@ -112,6 +113,19 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            // token过期，则用refresh_token去获取token，并且重新发起此请求
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    get_follower_info(); // 在RefreshToken完成后再调用get_notifications
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
                         ElMessage.error("获取粉丝列表失败")
                         return 
                     }
@@ -137,7 +151,13 @@ export default {
                 }
             })
         }
-        get_follower_info()
+        
+        (async () => {
+            if (await CheckIsLogin(store) === false) {
+                return;
+            }
+            get_follower_info()
+        })();
         // console.log(fansList)
 
         const is_followed = ref(null)

@@ -177,6 +177,7 @@ import router from '@/router/index';   //@定位src目录
 import {BackendRootURL} from '../common_resources/resource';
 // import { useRoute } from 'vue-router';
 import CopyRight from '../components/CopyRight.vue'
+import { RefreshToken } from '../utils/MakeAuthenticatedRequest'
 export default {
     name:"Home",
     components: { Content, CopyRight},
@@ -485,6 +486,18 @@ export default {
                 },
                 success(resp) {
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    postAComment(index, post_id); // 在RefreshToken完成后再调用
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
                         ElMessage({
                             message: '评论失败，请稍后重试',
                             type: 'error',
@@ -549,8 +562,22 @@ export default {
                         ElMessage.success("成功删除评论")
                         get_comments_by_post_id(index, post_id)
                         return 
+                    }else{
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    deleteAComment(index, post_id,comment_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
+                        ElMessage.error("删除评论失败")
                     }
-                    ElMessage.error("删除评论失败")
+                    
                 },
                 error(resp) {
                     ElMessage.error("删除评论失败")
@@ -586,6 +613,18 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    changeCollectStatusForAPost(index, post_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
                         ElMessage.error("收藏失败，请稍后重试")
                         return 
                     }

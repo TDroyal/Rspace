@@ -80,16 +80,16 @@
 
                             <div class="mb-3">
                                 <!-- <label for="username" class="form-label">用户名</label> -->
-                                <input v-model="username" type="text" class="form-control input-control" id="username" placeholder="用户名" autocomplete="username" required>
+                                <input v-model="username" type="text" class="form-control input-control" id="username" placeholder="用户名(6-20位)" autocomplete="username"  minlength="6" maxlength="20" required>
                             </div>
                        
                             <div class="mb-3">
                                 <!-- <label for="password" class="form-label">密码</label> -->
-                                <input v-model="password" type="password" class="form-control input-control" id="password" placeholder="密码" autocomplete="current-password" required>
+                                <input v-model="password" type="password" class="form-control input-control" id="password" placeholder="密码(不少于6位)" autocomplete="current-password" minlength="6" maxlength="50" required>
                             </div>
                             <div class="mb-3">
                                 <!-- <label for="password" class="form-label">密码</label> -->
-                                <input v-model="repeat_password" type="password" class="form-control input-control" id="repeat_password" placeholder="再次输入密码" autocomplete="current-password" required>
+                                <input v-model="repeat_password" type="password" class="form-control input-control" id="repeat_password" placeholder="再次输入密码" autocomplete="current-password" minlength="6" maxlength="50" required>
                             </div>
 
                             <!-- d-flex 类将创建一个弹性容器，而 justify-content-center 类将使其内容在水平方向上居中对齐。 -->
@@ -311,6 +311,7 @@ export default{
                                 is_login: true,
                                 fanscount:resp.data.fanscount,
                                 followercount:resp.data.fanscount,
+                                unread_notification_count:0,
                             });
                             router.push({name:"Home"});  //跳转路由
                         },

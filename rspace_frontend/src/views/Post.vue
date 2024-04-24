@@ -119,7 +119,7 @@ import { ElMessage, ElLoading} from 'element-plus' //
 import router from '@/router/index';   //@定位src目录
 import $ from 'jquery'
 import {BackendRootURL} from '../common_resources/resource';
-
+import { CheckIsLogin,  RefreshToken} from '../utils/MakeAuthenticatedRequest'
 export default {
     name: "Post",
     components:{Content, CopyRight},
@@ -151,17 +151,21 @@ export default {
         //                             <option value="4">其它</option>
 
         const store = useStore()
-        const check_is_login = ()=>{
-            if(store.state.user.is_login === false) {
-                router.push({
-                    name:"Login",
-                })
-                return false
-            }
-            return true
-        }
-        if(check_is_login() === false) {
-            return
+        // const check_is_login = ()=>{
+        //     if(store.state.user.is_login === false) {
+        //         router.push({
+        //             name:"Login",
+        //         })
+        //         return false
+        //     }
+        //     return true
+        // }
+        // if(check_is_login() === false) {
+        //     return
+        // }
+
+        if(CheckIsLogin(store) === false) {
+            return 
         }
 
         const uploadRef = ref(null);
@@ -265,6 +269,18 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status != 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    submitUpload()
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
                         ElMessage.error("分享失败")
                         return
                     }
@@ -302,7 +318,7 @@ export default {
         };
 
         const beforeImageUpload = (rawFile) => {
-            console.log(rawFile.type, rawFile.size / 1024/1024)
+            // console.log(rawFile.type, rawFile.size / 1024/1024)
             if (rawFile.raw.type !== 'image/jpg' && rawFile.raw.type !== 'image/png' && rawFile.raw.type !== 'image/jpeg') {
                 ElMessage.error('只能上传 JPG、PNG 或 JPEG 格式的图片！')
                 return false

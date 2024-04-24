@@ -46,6 +46,9 @@ const ModuleUser = {
 
         // 更新未读的通知数量
         updateUnreadNotificationCount(state, unread_notification_count_) {
+            if(Number.isInteger(unread_notification_count_) === false) {
+                return 
+            }
             state.unread_notification_count = unread_notification_count_
             let uu = {
                 user:state
@@ -127,22 +130,22 @@ const ModuleUser = {
                     const jwt_obj = jwtDecode(jwt)  //对token进行解密
                     // console.log(jwt, refresh_jwt, jwt_obj)
 
-                    setInterval(() => {  //每隔9分钟去刷新一次jwt
-                        $.ajax({
-                            url: BackendRootURL + "/api/token/refresh/",
-                            type: "POST",
-                            data: {
-                                refresh_jwt:refresh_jwt,
-                            },
-                            success(resp) {  //返回新的jwt
-                                // console.log('9分钟刷新的一次token令牌：', resp);
-                                context.commit("updateJwt", resp.jwt);
-                            },
-                            error(resp) {
-                                console.log(resp)
-                            },
-                        });
-                    }, 1000 * 60 * 9);
+                    // setInterval(() => {  //每隔9分钟去刷新一次jwt
+                    //     $.ajax({
+                    //         url: BackendRootURL + "/api/token/refresh/",
+                    //         type: "POST",
+                    //         data: {
+                    //             refresh_jwt:refresh_jwt,
+                    //         },
+                    //         success(resp) {  //返回新的jwt
+                    //             // console.log('9分钟刷新的一次token令牌：', resp);
+                    //             context.commit("updateJwt", resp.jwt);
+                    //         },
+                    //         error(resp) {
+                    //             console.log(resp)
+                    //         },
+                    //     });
+                    // }, 1000 * 60 * 9);
 
                     $.ajax({
                         url: BackendRootURL + "/myspace/getuserinfo/",  //就登录成功的时候获取一次

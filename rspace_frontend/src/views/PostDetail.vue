@@ -192,6 +192,7 @@ import { ref, reactive } from 'vue';
 import { useStore } from 'vuex';
 import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import ParseImageUrl from '../utils/ParseImageUrl'
+import { RefreshToken } from '../utils/MakeAuthenticatedRequest';
 // 这个界面应该有(如果这个帖子是当前登录用户的那么)编辑帖子按钮（进入一个新的页面编辑帖子/updatepost/:postid）和删除帖子按钮
 export default {
     name:"PostDetail",
@@ -354,6 +355,18 @@ export default {
                 },
                 success(resp) {
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    postAComment(post_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
                         ElMessage({
                             message: '评论失败，请稍后重试',
                             type: 'error',
@@ -411,8 +424,20 @@ export default {
                         ElMessage.success("成功删除评论")
                         get_comments_by_post_id(post_id)
                         return 
+                    }else{
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    deleteAComment(post_id,comment_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                        }
+                        ElMessage.error("删除评论失败")   
                     }
-                    ElMessage.error("删除评论失败")
                 },
                 error(resp) {
                     ElMessage.error("删除评论失败")
@@ -476,6 +501,18 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    changeCollectStatusForAPost(post_id); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
                         ElMessage.error("收藏失败，请稍后重试")
                         return 
                     }
@@ -519,6 +556,46 @@ export default {
             })
 
         }
+        
+        const doRemove = (post_id)=>{
+            $.ajax({
+                    url: BackendRootURL + "/homepost/deletepostbypostid/",
+                    type:"DELETE",
+                    data:JSON.stringify({ post_id: post_id }),  
+                    headers:{
+                        'Authorization': "Bearer " + store.state.user.jwt,
+                    },
+                    success(resp){
+                        if(resp.status === 0) {
+                            ElMessage.success("删除成功")
+                            // store.commit("updateHomeCurrentPage", 1)
+                            router.push({
+                                name:"Home", 
+                            })
+                            return 
+                        }else{
+                            if(resp.status === 401) {
+                                RefreshToken(store)
+                                .then((jwt) => {
+                                    if(jwt) {
+                                        doRemove(post_id)
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error(error);
+                                });
+                                return
+                            }
+                            ElMessage.error("删除失败")
+                        }
+                        
+                    },
+                    error(resp) {
+                        ElMessage.error("删除失败")
+                        console.log(resp)
+                    }
+                })
+        }
 
         // 删除帖子，删除成功后，返回到首页。
         const removeApost = (post_id)=>{
@@ -535,29 +612,7 @@ export default {
             )
             .then(() => {
                 // 删除成功然后跳转到首页去。
-                $.ajax({
-                    url: BackendRootURL + "/homepost/deletepostbypostid/",
-                    type:"DELETE",
-                    data:JSON.stringify({ post_id: post_id }),  
-                    headers:{
-                        'Authorization': "Bearer " + store.state.user.jwt,
-                    },
-                    success(resp){
-                        if(resp.status === 0) {
-                            ElMessage.success("删除成功")
-                            // store.commit("updateHomeCurrentPage", 1)
-                            router.push({
-                                name:"Home", 
-                            })
-                            return 
-                        }
-                        ElMessage.error("删除失败")
-                    },
-                    error(resp) {
-                        ElMessage.error("删除失败")
-                        console.log(resp)
-                    }
-                })
+                doRemove(post_id)
             })
             .catch(() => {
                 ElMessage({

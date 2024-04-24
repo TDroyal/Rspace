@@ -30,6 +30,9 @@ func SetupRouter() *gin.Engine {
 		loginGroup.POST("/token/refresh/", middleware.RefreshJWT())  // 刷新登录令牌
 		loginGroup.POST("/sendemailcode/", controller.SendEmailCode) //给邮箱发送验证码
 		loginGroup.POST("/register/", controller.Register)
+
+		//判断token是否合法
+		loginGroup.GET("/checktoken/", middleware.JWTAuth())
 	}
 
 	// 用户个人信息路由  更新个人信息

@@ -23,7 +23,7 @@
                         <div class="col-md-5 col-12">
                             <div class="mb-3">
                                 <label for="username" class="form-label">昵称</label>
-                                <input type="text" class="form-control" id="username" placeholder="你的昵称" v-model="userinfo.username">
+                                <input type="text" class="form-control" id="username" placeholder="你的昵称" v-model="userinfo.username" maxlength="20">
                             </div>
                         </div>
                         <div class="col-md-5 col-12">
@@ -70,7 +70,7 @@
                         <div class="col-md-10 col-12">
                             <div class="mb-3">
                                 <label for="introduction" class="form-label">个人介绍</label>
-                                <textarea class="form-control" id="introduction" rows="3" placeholder="关于你的个性、兴趣..." v-model="userinfo.introduction"></textarea>
+                                <textarea class="form-control" id="introduction" rows="3" placeholder="关于你的个性、兴趣..." v-model="userinfo.introduction" maxlength="200"></textarea>
                             </div>
                         </div>
                     </div>
@@ -102,25 +102,29 @@ import {useStore} from 'vuex'
 import $ from 'jquery'
 import { ElMessage } from 'element-plus'
 import {BackendRootURL} from '../common_resources/resource';
-import router from '@/router/index';   //@定位src目录
+// import router from '@/router/index';   //@定位src目录
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 export default {
     name:"EditUserInfo",
     components:{Content, CopyRight},
     setup(){
         const store = useStore()
-        const check_is_login = ()=>{
-            if(store.state.user.is_login === false) {
-                router.push({
-                    name:"Login",
-                })
-                return false
-            }
-            return true
+        // const check_is_login = ()=>{
+        //     if(store.state.user.is_login === false) {
+        //         router.push({
+        //             name:"Login",
+        //         })
+        //         return false
+        //     }
+        //     return true
+        // }
+        // if(check_is_login() === false) {
+        //     return
+        // }
+        
+        if (CheckIsLogin(store) === false) {
+            return;
         }
-        if(check_is_login() === false) {
-            return
-        }
-
         
 
         const userinfo = reactive({  //reactive不需要使用.value
@@ -188,14 +192,27 @@ export default {
                     address:userinfo.address,
                     introduction:userinfo.introduction,
                 },
-                headers: {  //jwt验证
-                    'Authorization': "Bearer " + userinfo.jwt,
+                headers:{
+                    'Authorization': "Bearer " + store.state.user.jwt,
                 },
                 success(resp) {
                     // 弹窗更新成功
                     // console.log(resp)
                     if(resp.status != 0) {
                         // console.log("更新失败")
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    modify_userinfo(); // 在RefreshToken完成后再调用
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
+
                         ElMessage({
                             message: '更新失败，请稍后重试',
                             type: 'error',
@@ -206,12 +223,15 @@ export default {
                         id: resp.data.id,
                         username: resp.data.name,
                         avatar: resp.data.avatar,
-                        jwt: userinfo.jwt,
-                        refresh_jwt: userinfo.refresh_jwt,
+                        jwt: store.state.user.jwt,
+                        refresh_jwt: store.state.user.refresh_jwt,
                         address: resp.data.address,
                         introduction: resp.data.introduction,
                         age: resp.data.age,
                         gender: resp.data.gender,
+                        fanscount:store.state.user.fanscount,
+                        followercount:store.state.user.followercount,
+                        unread_notification_count:store.state.user.unread_notification_count,
                         is_login: true,
                     });
                     ElMessage({
@@ -265,10 +285,23 @@ export default {
                 processData: false,
                 contentType: false,
                 headers:{
-                    'Authorization': "Bearer " + userinfo.jwt,
+                    'Authorization': "Bearer " + store.state.user.jwt,
                 },
                 success(resp) {
+                    // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    httpRequest(data); // 在RefreshToken完成后再调用
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return 
+                        }
                         ElMessage.error("更换头像失败，请稍后重试!")
                         return
                     }
@@ -281,6 +314,7 @@ export default {
                 }
             })
         }
+
 
         return {
             // store,

@@ -73,44 +73,18 @@ import $ from 'jquery'
 import { ElMessage } from 'element-plus';
 import {FormatDateTime, GetTimePeriod} from '../utils/DateTime'
 import CopyRight from '../components/CopyRight.vue'
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 
 export default {
     name:"Notifications",
     components:{Content, CopyRight},
     setup() {
         const store = useStore()
-        const check_is_login = ()=>{
-            if(store.state.user.is_login === false) {
-                router.push({
-                    name:"Login",
-                })
-                return false
-            }
-            return true
-        }
-        if(check_is_login() === false) {
-            return
-        }
 
         const notifications = reactive({
             total_count:0,
             count: 0,
             messages:[],
-            // total_count:1,
-            // count: 1,
-            // messages: [
-            //     {
-            //         id:1,
-            //         user_id:2,
-            //         username: '天生',  //是用户名，不是账号名
-            //         avatar: BackendRootURL + '/static/avatar/' + 'QQ图片20220704142508.jpg',
-            //         notification_status:1, //默认是1， 1是此消息未读
-            //         notification_type: 2,   //2是点赞
-            //         CreatedAt: "2天前",
-            //         post_id:48,
-            //         post_content:'测试',
-            //     },
-            // ],
         })
 
         const page_size = ref(10)
@@ -130,12 +104,29 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
-                        ElMessage.error(resp.message)
+                        if(resp.status === 401) {
+                            // token过期，则用refresh_token去获取token，并且重新发起此请求
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    get_notifications(); // 在RefreshToken完成后再调用get_notifications
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                        }else{
+                            ElMessage.error(resp.message)
+                        }
                         return 
                     }
                     // console.log(resp)
                     notifications.messages = resp.data.data
-                    notifications.count = resp.data.data.length
+                    if(resp.data.data === null) {
+                        notifications.count = 0
+                    }else {
+                        notifications.count = resp.data.data.length
+                    }
                     notifications.total_count = resp.data.count
 
                     for(let i = 0; i < notifications.count; i ++ )
@@ -149,7 +140,8 @@ export default {
                 }
             })
         }   
-        get_notifications()
+
+        // get_notifications()
         // console.log(notifications)
 
         // 将通知设为已读
@@ -171,6 +163,18 @@ export default {
                     //表示此消息已读，然后将总的未读消息减一即可(存入全局store里面)
                     if(resp.status === 0) {
                         store.commit("updateUnreadNotificationCount", store.state.user.unread_notification_count - 1)
+                    }else {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    changeNotificationStatus(notice_id, notification_status_); 
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                        }
                     }
                 }
                 
@@ -228,6 +232,17 @@ export default {
                     'Authorization': "Bearer " + store.state.user.jwt,
                 },
                 success(resp){
+                    if(resp.status === 401) {
+                        RefreshToken(store)
+                        .then((jwt) => {
+                            if(jwt) {
+                                getUnreadNotificationsCount(); // 在RefreshToken完成后再调用getUnreadNotificationsCount
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                    }
                     // notifications_count.value = resp.data
                     store.commit("updateUnreadNotificationCount", resp.data)
                 }
@@ -235,9 +250,17 @@ export default {
         }
 
         // 未登录不能获取未读通知数量
-        if(store.state.user.is_login === true) {
+        (async () => {
+            if (await CheckIsLogin(store) === false) {
+                return;
+            }
             getUnreadNotificationsCount()
-        }
+            get_notifications()
+        })();
+
+        // if(check_is_login(store.state.user.refresh_jwt)) {
+        //     getUnreadNotificationsCount()
+        // }
 
         return {
             page_size,

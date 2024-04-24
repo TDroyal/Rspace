@@ -224,7 +224,7 @@ export default {
 
         const getUserList = ()=>{
             // console.log("获取用户数据")
-            console.log("请求页数：", current_page.value)
+            // console.log("请求页数：", current_page.value)
             $.ajax({
                 url: BackendRootURL +  "/search/getuser/",
                 type:"GET",

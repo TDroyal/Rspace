@@ -43,6 +43,8 @@ import UserProfileNavbar from '../components/UserProfileNavbar.vue'
 // import UserProfileFollowList from '../components/UserProfileFollowList.vue';
 
 import {BackendRootURL} from '../common_resources/resource';
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
+
 export default {
     name: "Profile",
     // ,UserProfileStar, UserProfileFansList, UserProfileFollowList, UserPostLists,
@@ -50,18 +52,18 @@ export default {
     setup() {
         const store = useStore()
         // store.commit('updateUserPostlistPage', 1)
-        const check_is_login = ()=>{
-            if(store.state.user.is_login === false) {
-                router.push({
-                    name:"Login",
-                })
-                return false
-            }
-            return true
-        }
-        if(check_is_login() === false) {
-            return
-        }
+        // const check_is_login = ()=>{
+        //     if(store.state.user.is_login === false) {
+        //         router.push({
+        //             name:"Login",
+        //         })
+        //         return false
+        //     }
+        //     return true
+        // }
+        // if(check_is_login() === false) {
+        //     return
+        // }
         
         const route = useRoute();
         let user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
@@ -83,11 +85,11 @@ export default {
         //     posts:[],
         // })
         //先获取用户个人基本信息
-        const getUserInfo = async () => {
+        const getUserInfo = () => {
             // if (is_me.value === false) {
                 // console.log(is_me.value)
-                try {
-                    const resp = await $.ajax({
+                
+                    $.ajax({
                         url: BackendRootURL + "/myspace/getuserinfo/",
                         type: "GET",
                         data: {
@@ -96,29 +98,41 @@ export default {
                         headers: {
                             'Authorization': "Bearer " + store.state.user.jwt,  //这个里面存入的是当前登录的用户id
                         },
+                        success(resp) {
+                            // console.log(resp)
+                            if (resp.status != 0) {
+                                if(resp.status === 401) {
+                                    RefreshToken(store)
+                                    .then((jwt) => {
+                                        if(jwt) {
+                                            getUserInfo(); // 在RefreshToken完成后再调用
+                                        }
+                                    })
+                                    .catch((error) => {
+                                        console.error(error);
+                                    });
+                                }
+                                return;
+                            }
+                            // console.log(resp.data)
+                            user.id = resp.data.normal_userinfo.id,
+                            user.username = resp.data.normal_userinfo.name,
+                            user.age = resp.data.normal_userinfo.age,
+                            user.avatar = BackendRootURL + '/static/avatar/' + resp.data.normal_userinfo.avatar,
+                            user.gender = resp.data.normal_userinfo.gender,
+                            user.address = resp.data.normal_userinfo.address,
+                            user.introduction = resp.data.normal_userinfo.introduction
+                            // 再得到后端传过来的粉丝数量，关注数量，以及当前登录用户是否关注此用户
+                            user.fanscount = resp.data.fanscount
+                            user.followercount = resp.data.followercount
+                            user.is_followed = resp.data.is_followed
+                        },
                     });
-
-                    if (resp.status != 0) {
-                        return;
-                    }
-                    // console.log(resp.data)
-                    user.id = resp.data.normal_userinfo.id,
-                    user.username = resp.data.normal_userinfo.name,
-                    user.age = resp.data.normal_userinfo.age,
-                    user.avatar = BackendRootURL + '/static/avatar/' + resp.data.normal_userinfo.avatar,
-                    user.gender = resp.data.normal_userinfo.gender,
-                    user.address = resp.data.normal_userinfo.address,
-                    user.introduction = resp.data.normal_userinfo.introduction
-                    // 再得到后端传过来的粉丝数量，关注数量，以及当前登录用户是否关注此用户
-                    user.fanscount = resp.data.fanscount
-                    user.followercount = resp.data.followercount
-                    user.is_followed = resp.data.is_followed
+                    
 
                     // console.log("111111111111111", user);
                     // console.log(user)
-                } catch (error) {
-                    console.log(error);
-                }
+                
             // }
         };
 
@@ -174,13 +188,10 @@ export default {
         //     }
         // };
         // 我将获取用户信息和获取用户帖子的部分封装为异步函数getUserInfo和getUserPosts。然后，在loadData函数中使用await关键字按顺序执行这两个异步函数。
-        const loadData = async () => {
+        const loadData = () => {
             user_id = parseInt(route.params.userid);  //当前打开这个用户的id，从url上获取
             is_me.value = user_id === store.state.user.id;
-            await getUserInfo();
-            // await getUserPosts();
-            // console.log(user)
-            // 在这里可以继续操作userinfo和posts
+            getUserInfo();
         };
 
         // 监听路由参数的变化
@@ -195,8 +206,13 @@ export default {
             //     getUserPosts()
             //     return 
             // }
-            loadData();
-            
+
+            (async () => {
+                if (await CheckIsLogin(store) === false) {
+                    return;
+                }
+                loadData();
+            })();
         }, { immediate: true }); // immediate: true 表示在组件初始化时立即执行
 
         // loadData();

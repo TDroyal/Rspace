@@ -72,6 +72,7 @@ import router from '@/router/index';   //@定位src目录
 import { ElMessage } from 'element-plus';
 import { useStore } from 'vuex';
 import { ref, reactive } from 'vue';
+import { CheckIsLogin, RefreshToken } from '../utils/MakeAuthenticatedRequest';
 export default {
     name: "ProfileFollowList",
     components:{},
@@ -101,6 +102,18 @@ export default {
                 success(resp) {
                     // console.log(resp)
                     if(resp.status !== 0) {
+                        if(resp.status === 401) {
+                            RefreshToken(store)
+                            .then((jwt) => {
+                                if(jwt) {
+                                    get_follower_info(); // 在RefreshToken完成后再调用
+                                }
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                            return
+                        }
                         ElMessage.error("获取关注列表失败")
                         return 
                     }
@@ -122,7 +135,13 @@ export default {
                 }
             })
         }
-        get_follower_info()
+        (async () => {
+            if (await CheckIsLogin(store) === false) {
+                return;
+            }
+            get_follower_info()
+        })();
+        
         // 进入用户的个人空间
         const enterUserProfile = (user_id)=>{
             if(store.state.user.is_login) {
